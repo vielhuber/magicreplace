@@ -11,6 +11,7 @@ There exist cool tools like...
 How is magicreplace different from those tools?
 
 * blazingly fast (~1sec runtime on 100mb database file with 300.000 lines)
+* lightweight: only 2kb lines of code
 * file based: does not need a database - works on plain (sql) files
 * multi replace: does multiple replaces
 * considers edge cases: objects inside serialized strings
