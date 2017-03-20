@@ -22,4 +22,4 @@ Command line usage
 
 Class usage
 
-    MagicReplace::file('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
+    MagicReplace::do('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
