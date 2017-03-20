@@ -16,10 +16,16 @@ How is magicreplace different from those tools?
 * multi replace: does multiple replaces
 * considers edge cases: objects inside serialized strings
 
+Installation 
+
+    composer require vielhuber/magicreplace
+    
+Usage
+
+    require __DIR__ . '/vendor/autoload.php';
+    use vielhuber\dbhelper\DBHelper;
+    MagicReplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
+
 Command line usage
 
-    php magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
-
-Class usage
-
-    MagicReplace::do('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
+    php /vendor/bin/vielhuber/magicreplace/magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
