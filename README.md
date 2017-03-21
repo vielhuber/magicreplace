@@ -1,4 +1,4 @@
-# ðŸ” magicreplace ðŸ”
+# ðŸ”? magicreplace ðŸ”?
 
 magicreplace is a search/replace class with zero overhead.
 
@@ -31,8 +31,8 @@ composer require vielhuber/magicreplace
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
-use vielhuber\magicreplace\MagicReplace;
-MagicReplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
+use vielhuber\magicreplace\magicreplace;
+magicreplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
 ```
 
 ## Command line
