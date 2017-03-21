@@ -23,7 +23,7 @@ Installation
 Usage
 
     require __DIR__ . '/vendor/autoload.php';
-    use vielhuber\dbhelper\DBHelper;
+    use vielhuber\magicreplace\MagicReplace;
     MagicReplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
 
 Command line usage
