@@ -21,16 +21,22 @@ magicreplace is a search/replace class with zero overhead.
 
 ## Installation 
 
-    composer require vielhuber/magicreplace
+```
+composer require vielhuber/magicreplace
+```
     
 ## Usage
 
 ### Class
 
-    require __DIR__ . '/vendor/autoload.php';
-    use vielhuber\magicreplace\MagicReplace;
-    MagicReplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
+```php
+require __DIR__ . '/vendor/autoload.php';
+use vielhuber\magicreplace\MagicReplace;
+MagicReplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
+```
 
 ### Command line
 
-    php vendor/vielhuber/magicreplace/magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
+```
+php vendor/vielhuber/magicreplace/magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
+```
