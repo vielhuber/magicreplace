@@ -62,7 +62,7 @@ class magicreplace
 	}
 }
 // cli usage
-if (php_sapi_name() == 'cli' && isset($argv) && !empty($argv) && isset($arvg[1])) {
+if (php_sapi_name() == 'cli' && isset($argv) && !empty($argv) && isset($argv[1])) {
 	if (!isset($argv) || empty($argv) || !isset($argv[1]) || !isset($argv[2]) || !isset($argv[3]) || !isset($argv[4])) { die('missing options'); }
 	if (!file_exists(getcwd() . '/' . $argv[1])) { die('missing input'); }
 	$input = getcwd() . '/' . $argv[1];
