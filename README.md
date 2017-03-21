@@ -28,4 +28,4 @@ Usage
 
 Command line usage
 
-    php /vendor/bin/vielhuber/magicreplace/magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
+    php vendor/vielhuber/magicreplace/magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
