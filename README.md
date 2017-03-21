@@ -45,6 +45,7 @@ composer require vielhuber/magicreplace
 ### Usage
 
 ```php
+<?php
 require __DIR__ . '/vendor/autoload.php';
 use vielhuber\magicreplace\magicreplace;
 magicreplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
