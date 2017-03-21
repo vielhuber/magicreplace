@@ -19,15 +19,15 @@ magicreplace is a search/replace class with zero overhead.
 * multi replace: does multiple replaces
 * considers edge cases: objects inside serialized strings
 
-## Installation 
+## Usage as class
+
+### Installation
 
 ```
 composer require vielhuber/magicreplace
 ```
     
-## Usage
-
-### Class
+### Usage
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
@@ -35,8 +35,16 @@ use vielhuber\magicreplace\MagicReplace;
 MagicReplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
 ```
 
-### Command line
+## Usage via command line
+
+### Installation
 
 ```
-php vendor/vielhuber/magicreplace/magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
+wget https://raw.githubusercontent.com/vielhuber/magicreplace/master/magicreplace
+```
+
+### Usage
+
+```
+php magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
 ```
