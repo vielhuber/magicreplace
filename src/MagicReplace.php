@@ -97,5 +97,5 @@ if (php_sapi_name() == 'cli')
 		$search_replace[ $argv[ $argv__key ] ] = $argv[ $argv__key + 1 ];
 	}
 	magicreplace::run($input, $output, $search_replace);
-	die('done');
+	die('done...');
 }
