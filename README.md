@@ -19,7 +19,7 @@ magicreplace is a search/replace class with zero overhead.
 * multi replace: does multiple replaces
 * considers edge cases: objects inside serialized strings
 
-## Usage as class
+## Class
 
 ### Installation
 
@@ -35,7 +35,7 @@ use vielhuber\magicreplace\MagicReplace;
 MagicReplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
 ```
 
-## Usage via command line
+## Command line
 
 ### Installation
 
