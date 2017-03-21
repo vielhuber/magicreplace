@@ -1,4 +1,4 @@
-# ðŸ”? magicreplace ðŸ”?
+# âœ¨ magicreplace âœ¨
 
 magicreplace is a search/replace class with zero overhead.
 
@@ -19,6 +19,21 @@ magicreplace is a search/replace class with zero overhead.
 * multi replace: does multiple replaces
 * considers edge cases: objects inside serialized strings
 
+## Command line
+
+### Installation
+
+```
+wget https://raw.githubusercontent.com/vielhuber/magicreplace/master/src/magicreplace.php
+```
+
+### Usage
+
+```
+php magicreplace.php input.sql output.sql search-1 replace-1 search-2 replace-2
+```
+
+
 ## Class
 
 ### Installation
@@ -35,16 +50,3 @@ use vielhuber\magicreplace\magicreplace;
 magicreplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
 ```
 
-## Command line
-
-### Installation
-
-```
-wget https://raw.githubusercontent.com/vielhuber/magicreplace/master/magicreplace
-```
-
-### Usage
-
-```
-php magicreplace input.sql output.sql search-1 replace-1 search-2 replace-2
-```
