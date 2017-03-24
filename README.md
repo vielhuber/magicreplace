@@ -14,10 +14,11 @@ magicreplace is a search/replace class with zero overhead.
 ### How is magicreplace different from those tools?
 
 * Blazingly fast (~1sec runtime on 100mb database file with 300.000 rows)
-* Lightweight: only 4kb in size
+* Lightweight: only 7kb in size
 * File based: does not need a database or a wp installation - works on plain (sql) files
 * Multi replace: does multiple replaces
-* Considers edge cases: objects inside serialized strings
+* Considers edge cases: objects/classes inside serialized strings
+* Can be used either with the command line or as a class
 
 ## Command line
 
