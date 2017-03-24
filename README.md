@@ -4,7 +4,7 @@ magicreplace is a search/replace class with zero overhead.
 
 ## Intro
 
-###
+### The problem
 
 When moving databases, usually the url environment also changes.
 If the URL is hardcoded in the database (like WordPress [does](https://make.wordpress.org/core/handbook/contribute/design-decisions/#absolute-versus-relative-urls)), those URLs have to be changed.
@@ -33,7 +33,7 @@ and you will get an ugly error.
 * Can be used either with the command line or as a class
 * Acts carefully: If serialization fails, nothing is changed
 
-### Warning
+### Disclaimer
 
 This does not prevent you from taking backups. Use this script at your own risk.
 
