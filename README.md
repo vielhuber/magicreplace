@@ -4,7 +4,14 @@ magicreplace is a search/replace class with zero overhead.
 
 ## Intro
 
-### There already exist cool tools like...
+###
+
+When moving databases, usually the url environment also changes.
+If the domain is hardcoded in the database (like WordPress [does](https://make.wordpress.org/core/handbook/contribute/design-decisions/#absolute-versus-relative-urls)), those domains have to be changed.
+If you now do a search and replace on your entire database to change the URLs,
+you will corrupt data that has been serialized.
+
+### There already exist cool tools that solve this issue, for example...
 
 * [Velvet Blues Update URLs](https://wordpress.org/plugins/velvet-blues-update-urls/)
 * [Better Search Replace](https://wordpress.org/plugins/better-search-replace/)
