@@ -31,6 +31,11 @@ and you will get an ugly error.
 * Multi replace: does multiple replaces
 * Considers edge cases: objects/classes inside serialized strings
 * Can be used either with the command line or as a class
+* Acts carefully: If serialization fails, nothing is changed
+
+### Warning
+
+This does not prevent you from taking backups. Use this script at your own risk.
 
 ## Command line
 
