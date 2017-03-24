@@ -7,9 +7,9 @@ magicreplace is a search/replace class with zero overhead.
 ###
 
 When moving databases, usually the url environment also changes.
-If the domain is hardcoded in the database (like WordPress [does](https://make.wordpress.org/core/handbook/contribute/design-decisions/#absolute-versus-relative-urls)), those domains have to be changed.
+If the URL is hardcoded in the database (like WordPress [does](https://make.wordpress.org/core/handbook/contribute/design-decisions/#absolute-versus-relative-urls)), those URLs have to be changed.
 If you now do a search and replace on your entire database to change the URLs,
-you will corrupt data that has been serialized.
+you will corrupt data that has been serialized. Try out `unserialize(str_replace('www.foo.tld','www.barrr.tld',serialize('url=www.foo.tld')));` and you will get an ugly error.
 
 ### There already exist cool tools that solve this issue, for example...
 
