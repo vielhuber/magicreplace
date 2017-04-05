@@ -22,12 +22,14 @@ and you will get an ugly error.
 * [Suchen & Ersetzen](https://de.wordpress.org/plugins/search-and-replace/)
 * [WP-CLI's search-replace](http://wp-cli.org/commands/search-replace/)
 * [Search and Replace for WordPress Databases Script](https://interconnectit.com/products/search-and-replace-for-wordpress-databases/)
+* [SerPlace](http://pixelentity.com/wordpress-search-replace-domain/)
 
 ### How is magicreplace different from those tools?
 
 * Blazingly fast (~1sec runtime on 100mb database file with 300.000 rows)
 * Lightweight: only 7kb in size
 * File based: does not need a database or a wp installation - works on plain (sql) files
+* Local usage: does not need a remote server or a webservice
 * Multi replace: does multiple replaces
 * Considers edge cases: objects/classes inside serialized strings
 * Can be used either with the command line or as a class
