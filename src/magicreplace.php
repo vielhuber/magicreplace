@@ -27,7 +27,7 @@ class magicreplace
 				preg_match_all('/s:\d+:/', $string_after, $numbers_after, PREG_OFFSET_CAPTURE);
 				// something went wrong: replace search term temporarily (is changed later on again)
 				if( !isset($numbers_before[0]) || !isset($numbers_after[0]) || count($numbers_before[0]) != count($numbers_after[0]) ) {
-					$string_final = str_replace($search_replace__key, md5($search_replace__key), $string_final);
+					$string_final = str_replace($search_replace__key, md5($search_replace__key.(strlen($search_replace__key)*42)), $string_final);
 				}
 				else {
 					foreach($numbers_before[0] as $numbers_before__key=>$numbers_before__value) {
@@ -46,17 +46,29 @@ class magicreplace
 		    // then replace all other occurences
 		    $data = str_replace($search_replace__key,$search_replace__value,$data);
 		    // revert changes from above
-		    $data = str_replace(md5($search_replace__key),$search_replace__key,$data);		    
+		    $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);		    
 		}
 		file_put_contents($output, $data);
 	}
 
 	public static function mask($data) {
-		$data = str_replace('\\\\n',md5('NOREPLACE'),$data);
+		$data = str_replace('\\\\"',md5('NOREPLACE1'),$data);
+		$data = str_replace('\\\\n',md5('NOREPLACE2'),$data);
+		$data = str_replace('\\\\r',md5('NOREPLACE3'),$data);
+		
 		$data = str_replace('\n',"\n",$data);
+					
+		$data = str_replace('\r',"\r",$data);
+
 		$data = str_replace('\\\\','\\',$data);
-		$data = str_replace(md5('NOREPLACE'),'\\n',$data);
-		$data = str_replace('\'\'','\'',$data);
+		$data = str_replace('\'\'','\'',$data);			
+		$data = str_replace('\\\'','\'',$data);
+		$data = str_replace('\\"','"',$data);
+
+		$data = str_replace(md5('NOREPLACE3'),'\\r',$data);
+		$data = str_replace(md5('NOREPLACE2'),'\\n',$data);
+		$data = str_replace(md5('NOREPLACE1'),'\\"',$data);
+
 		return $data;
 	}
 
