@@ -19,12 +19,22 @@ class magicreplace
 		        $string_before = substr($data, $pos_begin, $pos_end-$pos_begin);
 		        $string_after = self::string($string_before, $search_replace);
 		        $string_final = $string_before;
+
 		        // strategy: unserialize the string (with some tricks, replace it, serialize it again)
 		        // we cannot simply take this new string, because we needed to changed some data (new lines, double quotes, very long integers, ...)
 		        // we simply replace all full digits, that have been changed and do a simple search and replace afterwards
 				$numbers_offset = 0;
 				preg_match_all('/s:\d+:/', $string_before, $numbers_before, PREG_OFFSET_CAPTURE);
 				preg_match_all('/s:\d+:/', $string_after, $numbers_after, PREG_OFFSET_CAPTURE);
+
+		        // there is another special case: sometimes there are references inside arrays (that cannot be preserved)
+		        // therefore we first resolve those references (by calling the whole procedure with an empty replace
+		        if( strpos($string_before,'R:') !== false && (!isset($numbers_before[0]) || !isset($numbers_after[0]) || count($numbers_before[0]) != count($numbers_after[0])) ) {
+			        $string_before = self::string($string_before, ['NONE'=>'NONE']);
+					preg_match_all('/s:\d+:/', $string_before, $numbers_before, PREG_OFFSET_CAPTURE);
+					$string_final = $string_before;
+		    	}
+
 				// something went wrong: replace search term temporarily (is changed later on again)
 				if( !isset($numbers_before[0]) || !isset($numbers_after[0]) || count($numbers_before[0]) != count($numbers_after[0]) ) {
 					$string_final = str_replace($search_replace__key, md5($search_replace__key.(strlen($search_replace__key)*42)), $string_final);
@@ -33,7 +43,7 @@ class magicreplace
 					foreach($numbers_before[0] as $numbers_before__key=>$numbers_before__value) {
 					    if( $numbers_before__value[0] == $numbers_after[0][$numbers_before__key][0] ) { continue; }
 					    $numbers_begin = $numbers_before__value[1]+$numbers_offset;
-					    $numbers_end = $numbers_before__value[1]+$numbers_offset+strlen($numbers_after[0][$numbers_before__key][0]);
+					    $numbers_end = $numbers_before__value[1]+$numbers_offset+strlen($numbers_before__value[0]);
 					    $string_final = substr($string_final, 0, $numbers_begin).$numbers_after[0][$numbers_before__key][0].substr($string_final, $numbers_end);
 					    $numbers_offset += strlen($numbers_after[0][$numbers_before__key][0])-strlen($numbers_before__value[0]);
 					}

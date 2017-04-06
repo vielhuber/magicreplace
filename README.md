@@ -31,7 +31,8 @@ and you will get an ugly error.
 * File based: does not need a database or a wp installation - works on plain (sql) files
 * Local usage: does not need a remote server or a webservice
 * Multi replace: does multiple replaces
-* Considers edge cases: objects/classes inside serialized strings
+* Considers edge cases: Can handle objects and even references
+* Ignores classes that are not available at runtime
 * Can be used either with the command line or as a class
 * Acts carefully: If serialization fails, nothing is changed
 
