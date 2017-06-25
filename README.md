@@ -26,8 +26,9 @@ and you will get an ugly error.
 
 ### How is magicreplace different from those tools?
 
-* Blazingly fast (~1sec runtime on 100mb database file with 300.000 rows)
+* Fast (~1sec runtime on 100mb database file with 300.000 rows)
 * Lightweight: only 7kb in size
+* Works also on big files with small memory limit settings
 * File based: does not need a database or a wp installation - works on plain (sql) files
 * Local usage: does not need a remote server or a webservice
 * Multi replace: does multiple replaces
