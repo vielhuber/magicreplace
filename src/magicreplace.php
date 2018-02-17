@@ -2,7 +2,19 @@
 namespace vielhuber\magicreplace;
 class magicreplace
 {
-	public static function run($input, $output, $search_replace)
+    public static function run($input, $output, $search_replace)
+    {
+        // split source file in several files
+        exec('split '.$input.' -b 1m '.$input.'-SPLITTED');
+        foreach( glob($input.'-SPLITTED*') as $filename )
+        {
+            magicreplace::runPart($filename, $filename, $search_replace);
+        }
+        // join files
+        exec('cat '.$input.'-SPLITTED* > '.$output);
+        exec('rm '.$input.'-SPLITTED*');
+    }
+    public static function runPart($input, $output, $search_replace)
 	{
 		if( !file_exists($input) ) { die('error'); } $data = file_get_contents($input);
 		foreach($search_replace as $search_replace__key=>$search_replace__value)
@@ -132,14 +144,6 @@ if (php_sapi_name() == 'cli' && isset($argv) && !empty($argv) && isset($argv[1])
 		if ($argv__key % 2 == 0) { continue; }
 		$search_replace[ $argv[ $argv__key ] ] = $argv[ $argv__key + 1 ];
 	}
-	// split source file in several files
-	exec('split '.$input.' -b 100m '.$input.'-SPLITTED');
-	foreach( glob($input.'-SPLITTED*') as $filename )
-	{
-		magicreplace::run($filename, $filename, $search_replace);
-	}
-	// join files
-	exec('cat '.$input.'-SPLITTED* > '.$output);
-	exec('rm '.$input.'-SPLITTED*');
+	magicreplace::run($input, $output, $search_replace);
 	die('done...');
 }

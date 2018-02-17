@@ -36,6 +36,7 @@ and you will get an ugly error.
 * Ignores classes that are not available at runtime
 * Can be used either with the command line or as a class
 * Acts carefully: If serialization fails, nothing is changed
+* Does its work in junks to overcome php limits
 
 ### Disclaimer
 
