@@ -4,8 +4,8 @@ class magicreplace
 {
     public static function run($input, $output, $search_replace)
     {
-        // split source file in several files
-        exec('split '.$input.' -b 1m '.$input.'-SPLITTED');
+		// split source file in several files
+        exec('split -b 1m '.$input.' '.$input.'-SPLITTED');
         foreach( glob($input.'-SPLITTED*') as $filename )
         {
             magicreplace::runPart($filename, $filename, $search_replace);
