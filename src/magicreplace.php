@@ -109,13 +109,13 @@ class magicreplace
 		elseif( is_array($data) )
 		{
 			$tmp = [];
-			foreach ( $data as $data__key => $data__value ) { $tmp[ $data__key ] = self::string( $data__value, $search_replace, false, $level+1 ); }
+			foreach ( $data as $data__key => $data__value ) { $tmp[ self::string( $data__key, $search_replace, false, $level+1 ) ] = self::string( $data__value, $search_replace, false, $level+1 ); }
 			$data = $tmp; unset( $tmp );
 		}
 		elseif ( is_object( $data ) )
 		{
 			$tmp = $data; $props = get_object_vars( $data );
-			foreach ( $props as $data__key => $data__value ) { $tmp->$data__key = self::string( $data__value, $search_replace, false, $level+1 ); }
+			foreach ( $props as $data__key => $data__value ) { $tmp->{ self::string( $data__key, $search_replace, false, $level+1 ) } = self::string( $data__value, $search_replace, false, $level+1 ); }
 			$data = $tmp; unset( $tmp );
 		}
 		elseif( is_string($data) )
