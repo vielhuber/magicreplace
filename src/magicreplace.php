@@ -2,10 +2,20 @@
 namespace vielhuber\magicreplace;
 class magicreplace
 {
+	public static function getOs()
+	{
+		if( stristr(PHP_OS, 'DAR') ) { return 'mac'; }
+		if( stristr(PHP_OS, 'WIN') || stristr(PHP_OS, 'CYGWIN') ) { return 'windows'; }
+		if( stristr(PHP_OS, 'LINUX') ) { return 'linux'; }
+		return 'unknown';
+	}
     public static function run($input, $output, $search_replace)
     {
 		// split source file in several files
-        exec('split -b 1m '.$input.' '.$input.'-SPLITTED');
+		if( self::getOs() == 'mac' ) { $command = 'gsplit'; }
+		elseif ( self::getOs() == 'windows' || self::getOs() == 'linus' ) { $command = 'split'; }
+		else { die('unknown operating system'); }
+        exec($command . ' -C 1m '.$input.' '.$input.'-SPLITTED');
         foreach( glob($input.'-SPLITTED*') as $filename )
         {
             magicreplace::runPart($filename, $filename, $search_replace);
@@ -74,7 +84,7 @@ class magicreplace
 		    // then replace all other occurences
 		    $data = str_replace($search_replace__key,$search_replace__value,$data);
 		    // revert changes from above
-		    $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);		    
+		    $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);
 		}
 		file_put_contents($output, $data);
 	}
@@ -83,11 +93,11 @@ class magicreplace
 	{
 		$data = str_replace('\\\\"',md5('NOREPLACE1'),$data);
 		$data = str_replace('\\\\n',md5('NOREPLACE2'),$data);
-		$data = str_replace('\\\\r',md5('NOREPLACE3'),$data);		
-		$data = str_replace('\n',"\n",$data);					
+		$data = str_replace('\\\\r',md5('NOREPLACE3'),$data);
+		$data = str_replace('\n',"\n",$data);
 		$data = str_replace('\r',"\r",$data);
 		$data = str_replace('\\\\','\\',$data);
-		$data = str_replace('\'\'','\'',$data);			
+		$data = str_replace('\'\'','\'',$data);
 		$data = str_replace('\\\'','\'',$data);
 		$data = str_replace('\\"','"',$data);
 		$data = str_replace(md5('NOREPLACE3'),'\\r',$data);
