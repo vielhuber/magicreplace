@@ -40,7 +40,7 @@ and you will get an ugly error.
 
 ### Disclaimer
 
-This does not release you from taking backups. Use this script at your own risk.
+This does not release you from taking backups. Use this script at your own risk!
 
 ## Command line
 
