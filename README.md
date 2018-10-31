@@ -44,6 +44,18 @@ This does not release you from taking backups. Use this script at your own risk!
 
 ## Command line
 
+### Requirements
+
+#### Mac
+```
+brew install coreutils
+```
+
+#### Windows
+```
+[Cygwin](https://www.cygwin.com/)
+```
+
 ### Installation
 
 ```
