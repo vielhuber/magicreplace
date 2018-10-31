@@ -52,7 +52,7 @@ brew install coreutils
 ```
 
 ##### Windows
-[Cygwin](https://cygwin.com/install.html)
+Install [Cygwin](https://cygwin.com/install.html)
 
 ### Installation
 
