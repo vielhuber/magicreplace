@@ -12,8 +12,8 @@ class magicreplace
     public static function run($input, $output, $search_replace)
     {
 		// split source file in several files
-		if( self::getOs() == 'mac' ) { $command = 'gsplit'; }
-		elseif ( self::getOs() == 'windows' || self::getOs() == 'linus' ) { $command = 'split'; }
+		if( self::getOs() === 'mac' ) { $command = 'gsplit'; }
+		elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command = 'split'; }
 		else { die('unknown operating system'); }
         exec($command . ' -C 1m '.$input.' '.$input.'-SPLITTED');
         foreach( glob($input.'-SPLITTED*') as $filename )
