@@ -84,9 +84,9 @@ use vielhuber\magicreplace\magicreplace;
 magicreplace::run('input.sql','output.sql',['search-1'=>'replace-2','search-2'=>'replace-2']);
 ```
 
-### Recommended replace strategy
+## Recommended replace strategy
 
-If you want to for example replace http://www.foo.tld with https://www.bar.tld, the safest method to do so is with the following replacements:
+If you want for example to replace http://www.foo.tld with https://www.bar.tld, the safest method to do so is with the following replacements (in the given order):
 
 - http://www.foo.tld https://www.bar.tld
 - https://www.foo.tld https://www.bar.tld
