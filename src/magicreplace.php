@@ -15,14 +15,14 @@ class magicreplace
 		if( self::getOs() === 'mac' ) { $command = 'gsplit'; }
 		elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command = 'split'; }
 		else { die('unknown operating system'); }
-        exec($command . ' -C 1m '.$input.' '.$input.'-SPLITTED');
+        exec($command . ' -C 1m "'.$input.'" "'.$input.'-SPLITTED"');
         foreach( glob($input.'-SPLITTED*') as $filename )
         {
             magicreplace::runPart($filename, $filename, $search_replace);
         }
         // join files
-        exec('cat '.$input.'-SPLITTED* > '.$output);
-        exec('rm '.$input.'-SPLITTED*');
+        exec('cat "'.$input.'-SPLITTED"* > "'.$output.'"');
+        exec('rm "'.$input.'-SPLITTED"*');
     }
     public static function runPart($input, $output, $search_replace)
 	{
