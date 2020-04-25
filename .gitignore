@@ -1,4 +1,4 @@
-/.idea/
-/tests/
 /vendor/
-composer.lock
+/composer.lock
+/.phpunit.result.cache
+/tests/data/**/output-test.sql
