@@ -41,13 +41,13 @@ class magicreplace
 		    $position_offset = 0;
 		    if(!empty($positions) && !empty($positions[0])) {
 		    foreach($positions[0] as $positions__value) {
-		        $pointer = $positions__value[1]+mb_strpos($positions__value[0],$search_replace__key)+$position_offset;
+		        $pointer = $positions__value[1]+strpos($positions__value[0],$search_replace__key)+$position_offset;
 		        while($pointer >= 1 && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && $data{$pointer+1} != '\'')) { $pointer--; }
 		        $pos_begin = $pointer+1;
-		        $pointer = $positions__value[1]+mb_strpos($positions__value[0],$search_replace__key)+$position_offset;
-		        while($pointer < mb_strlen($data) && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && ($pointer+1 === mb_strlen($data) || $data{$pointer+1} != '\''))) { $pointer++; }
+		        $pointer = $positions__value[1]+strpos($positions__value[0],$search_replace__key)+$position_offset;
+		        while($pointer < strlen($data) && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && ($pointer+1 === strlen($data) || $data{$pointer+1} != '\''))) { $pointer++; }
 		        $pos_end = $pointer;
-		        $string_before = mb_substr($data, $pos_begin, $pos_end-$pos_begin);
+		        $string_before = substr($data, $pos_begin, $pos_end-$pos_begin);
 		        $string_after = self::string($string_before, $search_replace);
 		        $string_final = $string_before;
 
@@ -60,7 +60,7 @@ class magicreplace
 
 		        // there is another special case: sometimes there are references inside arrays (that cannot be preserved)
 		        // therefore we first resolve those references (by calling the whole procedure with an empty replace
-		        if( mb_strpos($string_before,'R:') !== false && (!isset($numbers_before[0]) || !isset($numbers_after[0]) || count($numbers_before[0]) != count($numbers_after[0])) )
+		        if( strpos($string_before,'R:') !== false && (!isset($numbers_before[0]) || !isset($numbers_after[0]) || count($numbers_before[0]) != count($numbers_after[0])) )
 		        {
 			        $string_before = self::string($string_before, ['NONE'=>'NONE']);
 					preg_match_all('/s:\d+:/', $string_before, $numbers_before, PREG_OFFSET_CAPTURE);
@@ -70,7 +70,7 @@ class magicreplace
 				// something went wrong: replace search term temporarily (is changed later on again)
 				if( !isset($numbers_before[0]) || !isset($numbers_after[0]) || count($numbers_before[0]) != count($numbers_after[0]) )
 				{
-					$string_final = str_replace($search_replace__key, md5($search_replace__key.(mb_strlen($search_replace__key)*42)), $string_final);
+					$string_final = str_replace($search_replace__key, md5($search_replace__key.(strlen($search_replace__key)*42)), $string_final);
 				}
 				else
 				{
@@ -78,20 +78,20 @@ class magicreplace
 					{
 					    if( $numbers_before__value[0] == $numbers_after[0][$numbers_before__key][0] ) { continue; }
 					    $numbers_begin = $numbers_before__value[1]+$numbers_offset;
-					    $numbers_end = $numbers_before__value[1]+$numbers_offset+mb_strlen($numbers_before__value[0]);
-					    $string_final = mb_substr($string_final, 0, $numbers_begin).$numbers_after[0][$numbers_before__key][0].mb_substr($string_final, $numbers_end);
-					    $numbers_offset += mb_strlen($numbers_after[0][$numbers_before__key][0])-mb_strlen($numbers_before__value[0]);
+					    $numbers_end = $numbers_before__value[1]+$numbers_offset+strlen($numbers_before__value[0]);
+					    $string_final = substr($string_final, 0, $numbers_begin).$numbers_after[0][$numbers_before__key][0].substr($string_final, $numbers_end);
+					    $numbers_offset += strlen($numbers_after[0][$numbers_before__key][0])-strlen($numbers_before__value[0]);
 					}
 					//$string_final = str_replace($search_replace__key,$search_replace__value,$string_final);
 				}
-				$data = mb_substr($data, 0, $pos_begin).$string_final.mb_substr($data, $pos_end);
-				$position_offset += mb_strlen($string_final) - mb_strlen($string_before);
+				$data = substr($data, 0, $pos_begin).$string_final.substr($data, $pos_end);
+				$position_offset += strlen($string_final) - strlen($string_before);
 		    }
 			}
 		    // then replace all other occurences
 		    $data = str_replace($search_replace__key,$search_replace__value,$data);
 		    // revert changes from above
-		    $data = str_replace(md5($search_replace__key.(mb_strlen($search_replace__key)*42)),$search_replace__key,$data);
+		    $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);
 		}
 		file_put_contents($output, $data);
 	}
@@ -118,7 +118,7 @@ class magicreplace
 		// special case: if data is boolean false (unserialize would return false)
 		if( $data === 'b:0;' ) { $data = self::string(unserialize($data), $search_replace, true, $level+1); }
 		// special case: class cannot be unserialized (sometimes yoast serializes data at runtime when a class is available), return empty string
-		elseif( is_string($data) && mb_strpos($data,'C:') === 0 ) { return ''; }
+		elseif( is_string($data) && strpos($data,'C:') === 0 ) { return ''; }
 		// if this is normal serialized data
 		elseif( @unserialize($data) !== false ) { $data = self::string(unserialize($data), $search_replace, true, $level+1); }
 		// special case: if data contains new lines and is recognized after replacing them AND/OR if data contains double quotes and is recognized after replacing them

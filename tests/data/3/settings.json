@@ -1,0 +1,14 @@
+{
+    "target": {
+        "host": "localhost",
+        "port": "3306",
+        "database": "dr-sommer",
+        "username": "root",
+        "password": "root"
+    },
+    "replace": {
+        "https://www.tierarzt-sommer.de": "http://dr-sommer.local.vielhuber.de",
+        "www.tierarzt-sommer.de": "dr-sommer.local.vielhuber.de",
+        "wpFastestCache.php": "wpFastestCache.OFF"
+    }
+}

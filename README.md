@@ -22,6 +22,7 @@ and you will get an ugly error.
 -   [Velvet Blues Update URLs](https://wordpress.org/plugins/velvet-blues-update-urls/)
 -   [Better Search Replace](https://wordpress.org/plugins/better-search-replace/)
 -   [Suchen & Ersetzen](https://de.wordpress.org/plugins/search-and-replace/)
+-   [WP Migrate DB](https://de.wordpress.org/plugins/wp-migrate-db/)
 -   [WP-CLI's search-replace](http://wp-cli.org/commands/search-replace/)
 -   [Search and Replace for WordPress Databases Script](https://interconnectit.com/products/search-and-replace-for-wordpress-databases/)
 -   [SerPlace](http://pixelentity.com/wordpress-search-replace-domain/)
