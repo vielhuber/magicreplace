@@ -121,11 +121,7 @@ Example `settings.sql` file:
 
 If a test fails, the expected output is stored in `expected.sql`.
 
-You also can provide a `whitelist.sql` file that includes all lines from `input.sql` that should be ignored (e.g. where magicreplace acts differently from Search-Replace-DB).
-
-You can even auto generate test cases (that compares magicreplace to [Search-Replace-DB](https://github.com/interconnectit/Search-Replace-DB) and only gives you the diff) if you omit `input.sql` and `output.sql` and define a mysql database to dump from locally:
-
-Example `settings.sql` file:
+You can even auto generate test cases (that compares magicreplace to [Search-Replace-DB](https://github.com/interconnectit/Search-Replace-DB) and only gives you the diff) if you omit `input.sql` and `output.sql` and define a mysql database to dump from locally. Example `settings.sql` file:
 
 ```
 {
@@ -143,4 +139,4 @@ Example `settings.sql` file:
 }
 ```
 
-`input.sql` and `output.sql` then gets generated automatically.
+`input.sql` and `output.sql` then gets generated automatically. You also can provide a `whitelist.sql` file that includes all lines from `input.sql` that should be ignored (e.g. where magicreplace acts differently from Search-Replace-DB).
