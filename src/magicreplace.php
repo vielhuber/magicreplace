@@ -31,10 +31,10 @@ class magicreplace
 		{
 		    // first find all occurences of the string to replace
 			// this matches serialized and non serialized occurences
-			preg_match_all('/'.preg_quote($search_replace__key, '/').'/', $data, $positions, PREG_OFFSET_CAPTURE);
+			preg_match_all('/s:\d.*?('.preg_quote($search_replace__key, '/').').*?\"/', $data, $positions, PREG_OFFSET_CAPTURE);
 		    $position_offset = 0;
-		    if(!empty($positions) && !empty($positions[0])) {
-		    foreach($positions[0] as $positions__value) {
+		    if(!empty($positions) && !empty($positions[1])) {
+		    foreach($positions[1] as $positions__value) {
 				// determine begin and end of (potentially serialized) string
 		        $pointer = $positions__value[1]+strpos($positions__value[0],$search_replace__key)+$position_offset;
 		        while($pointer >= 1 && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && $data{$pointer+1} != '\'')) { $pointer--; }
