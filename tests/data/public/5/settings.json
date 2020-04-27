@@ -1,0 +1,19 @@
+{
+    "replace": {
+        "https://tld.com": "https://tld.de",
+        "https://tld.de": "https://tld.d",
+        "https://tld.d": "https://tld.",
+        "https://tld.": "https://tld",
+        "https://tld": "https://tl",
+        "https://tl": "https://t",
+        "https://t": "https://",
+        "https://": "https:/",
+        "https:/": "https:",
+        "https:": "https",
+        "https": "http",
+        "http": "htt",
+        "htt": "ht",
+        "ht": "h",
+        "h": ""
+    }
+}

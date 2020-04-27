@@ -1,0 +1,1 @@
+INSERT INTO `wp_options` VALUES ('https://tld.com.local', 'a:1:{s:4:\"home\";s:21:\"https://tld.com.local\";}', 'a:1:{s:4:\"foob\";s:21:\"https://tld.com.local\";}');

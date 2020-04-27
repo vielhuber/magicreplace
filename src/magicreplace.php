@@ -2,16 +2,13 @@
 namespace vielhuber\magicreplace;
 class magicreplace
 {
-	public static function getOs()
-	{
-		if( stristr(PHP_OS, 'DAR') ) { return 'mac'; }
-		if( stristr(PHP_OS, 'WIN') || stristr(PHP_OS, 'CYGWIN') ) { return 'windows'; }
-		if( stristr(PHP_OS, 'LINUX') ) { return 'linux'; }
-		return 'unknown';
-	}
-
     public static function run($input, $output, $search_replace)
     {
+		clearstatcache();
+		if( filesize( $input ) === 0 ) {
+			file_put_contents($output, '');
+			return;
+		}
 		// split source file in several files
 		if( self::getOs() === 'mac' ) { $command = 'gsplit'; }
 		elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command = 'split'; }
@@ -26,34 +23,35 @@ class magicreplace
         exec('rm "'.$input.'-SPLITTED"*');
     }
 
-    public static function runPart($input, $output, $search_replace)
+    private static function runPart($input, $output, $search_replace)
 	{
-		if( !file_exists($input) ) { die('error'); } $data = file_get_contents($input);
+		if( !file_exists($input) ) { die('error'); }
+		$data = file_get_contents($input);
 		foreach($search_replace as $search_replace__key=>$search_replace__value)
 		{
-		    // first find all critical serialized occurences in a very fast and efficient way
-            // match shortest string that begins with string to replace and ends with ";
-            // we also catch completely wrong matches (like *STRING', 'a:1:{s:4:\"OTHER\";*, but we sort this out later)
-            $regex_start = preg_quote($search_replace__key, '/');
-            $regex_end = '\"\;';
-            $regex = '/'.$regex_start.'((?!'.$regex_start.').)*'.$regex_end.'/';
-		    preg_match_all($regex, $data, $positions, PREG_OFFSET_CAPTURE);
+		    // first find all occurences of the string to replace
+			// this matches serialized and non serialized occurences
+			preg_match_all('/'.preg_quote($search_replace__key, '/').'/', $data, $positions, PREG_OFFSET_CAPTURE);
 		    $position_offset = 0;
 		    if(!empty($positions) && !empty($positions[0])) {
 		    foreach($positions[0] as $positions__value) {
+				// determine begin and end of (potentially serialized) string
 		        $pointer = $positions__value[1]+strpos($positions__value[0],$search_replace__key)+$position_offset;
 		        while($pointer >= 1 && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && $data{$pointer+1} != '\'')) { $pointer--; }
 		        $pos_begin = $pointer+1;
 		        $pointer = $positions__value[1]+strpos($positions__value[0],$search_replace__key)+$position_offset;
 		        while($pointer < strlen($data) && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && ($pointer+1 === strlen($data) || $data{$pointer+1} != '\''))) { $pointer++; }
 		        $pos_end = $pointer;
+
+				// string
 		        $string_before = substr($data, $pos_begin, $pos_end-$pos_begin);
+				// string after replacement
 		        $string_after = self::string($string_before, $search_replace);
+				// prepare final string
 		        $string_final = $string_before;
 
-		        // strategy: unserialize the string (with some tricks, replace it, serialize it again)
-		        // we cannot simply take this new string, because we needed to changed some data (new lines, double quotes, very long integers, ...)
-		        // we simply replace all full digits, that have been changed and do a simple search and replace afterwards
+		        // we cannot simply take the replaced serialized string, because we needed to change some data (new lines, double quotes, very long integers, ...)
+				// to overcome this, we simply replace all full digits, that have been changed and do a simple search and replace afterwards
 				$numbers_offset = 0;
 				preg_match_all('/s:\d+:/', $string_before, $numbers_before, PREG_OFFSET_CAPTURE);
 				preg_match_all('/s:\d+:/', $string_after, $numbers_after, PREG_OFFSET_CAPTURE);
@@ -67,11 +65,14 @@ class magicreplace
 					$string_final = $string_before;
 		    	}
 
-				// something went wrong: replace search term temporarily (is changed later on again)
+				// detect if something went wrong (the occurence of digits is different before and after replacement)
+				// we undo the replacement (with the help of a temporary string)
 				if( !isset($numbers_before[0]) || !isset($numbers_after[0]) || count($numbers_before[0]) != count($numbers_after[0]) )
 				{
 					$string_final = str_replace($search_replace__key, md5($search_replace__key.(strlen($search_replace__key)*42)), $string_final);
 				}
+
+				// if everything went well, replace the digits (not the string itself, because we do this completely afterwards)
 				else
 				{
 					foreach($numbers_before[0] as $numbers_before__key=>$numbers_before__value)
@@ -82,21 +83,20 @@ class magicreplace
 					    $string_final = substr($string_final, 0, $numbers_begin).$numbers_after[0][$numbers_before__key][0].substr($string_final, $numbers_end);
 					    $numbers_offset += strlen($numbers_after[0][$numbers_before__key][0])-strlen($numbers_before__value[0]);
 					}
-					//$string_final = str_replace($search_replace__key,$search_replace__value,$string_final);
 				}
 				$data = substr($data, 0, $pos_begin).$string_final.substr($data, $pos_end);
 				$position_offset += strlen($string_final) - strlen($string_before);
 		    }
 			}
-		    // then replace all other occurences
+		    // finally replace all occurences (inside and outside of serialized strings)
 		    $data = str_replace($search_replace__key,$search_replace__value,$data);
-		    // revert changes from above
+		    // revert changes from above (if something went wrong)
 		    $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);
 		}
 		file_put_contents($output, $data);
 	}
 
-	public static function mask($data)
+	private static function mask($data)
 	{
 		$data = str_replace('\\\\"',md5('NOREPLACE1'),$data);
 		$data = str_replace('\\\\n',md5('NOREPLACE2'),$data);
@@ -113,7 +113,7 @@ class magicreplace
 		return $data;
 	}
 
-	public static function string($data, $search_replace, $serialized = false, $level = 0)
+	private static function string($data, $search_replace, $serialized = false, $level = 0)
 	{
 		// special case: if data is boolean false (unserialize would return false)
 		if( $data === 'b:0;' ) { $data = self::string(unserialize($data), $search_replace, true, $level+1); }
@@ -141,6 +141,14 @@ class magicreplace
 		}
 		if( $serialized === true ) { return serialize($data); }
 		return $data;
+	}
+
+	private static function getOs()
+	{
+		if( stristr(PHP_OS, 'DAR') ) { return 'mac'; }
+		if( stristr(PHP_OS, 'WIN') || stristr(PHP_OS, 'CYGWIN') ) { return 'windows'; }
+		if( stristr(PHP_OS, 'LINUX') ) { return 'linux'; }
+		return 'unknown';
 	}
 }
 

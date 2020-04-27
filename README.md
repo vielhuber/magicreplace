@@ -24,7 +24,7 @@ and you will get an ugly error.
 -   [Suchen & Ersetzen](https://de.wordpress.org/plugins/search-and-replace/)
 -   [WP Migrate DB](https://de.wordpress.org/plugins/wp-migrate-db/)
 -   [WP-CLI's search-replace](http://wp-cli.org/commands/search-replace/)
--   [Search and Replace for WordPress Databases Script](https://interconnectit.com/products/search-and-replace-for-wordpress-databases/)
+-   [Search-Replace-DB](https://github.com/interconnectit/Search-Replace-DB)
 -   [SerPlace](http://pixelentity.com/wordpress-search-replace-domain/)
 
 ### How is magicreplace different from those tools?
@@ -39,6 +39,7 @@ and you will get an ugly error.
 -   Ignores classes that are not available at runtime
 -   Can be used either with the command line or as a class
 -   Acts carefully: If serialization fails, nothing is changed
+-   Never changes data (out of bound ints are preserved, auto generated dates are not updated)
 -   Does its work in junks to overcome php limits
 
 ### Disclaimer
@@ -57,7 +58,7 @@ brew install coreutils
 
 ##### Windows
 
-Install all basic packages from [Cygwin](https://cygwin.com/install.html)
+Runs out of the box with [WSL/WSL2](https://docs.microsoft.com/en-us/windows/wsl/about)/[Cygwin](https://cygwin.com/install.html).
 
 ### Installation
 
@@ -98,3 +99,48 @@ If you want for example to replace http://www.foo.tld with https://www.bar.tld, 
 -   https://foo.tld https://www.bar.tld
 -   www.foo.tld www.bar.tld
 -   foo.tld bar.tld
+
+## Testing
+
+Just place these 3 files in a (optionally nested) subfolder of `tests/data`:
+
+-   `input.sql`: The desired input file
+-   `output.sql`: The desired output file
+-   `settings.sql`: Define your replacements
+
+Example `settings.sql` file:
+
+```
+{
+    "replace": {
+        "http://www.foo.tld": "https://www.bar.tld",
+        "https://www.foo.tld": "https://www.bar.tld"
+    }
+}
+```
+
+If a test fails, the expected output is stored in `expected.sql`.
+
+You also can provide a `whitelist.sql` file that includes all lines from `input.sql` that should be ignored (e.g. where magicreplace acts differently from Search-Replace-DB).
+
+You can even auto generate test cases (that compares magicreplace to [Search-Replace-DB](https://github.com/interconnectit/Search-Replace-DB) and only gives you the diff) if you omit `input.sql` and `output.sql` and define a mysql database to dump from locally:
+
+Example `settings.sql` file:
+
+```
+{
+    "source": {
+        "host": "localhost",
+        "port": "3306",
+        "database": "xxx",
+        "username": "xxx",
+        "password": "xxx",
+    },
+    "replace": {
+        "http://www.foo.tld": "https://www.bar.tld",
+        "https://www.foo.tld": "https://www.bar.tld"
+    }
+}
+```
+
+`input.sql` and `output.sql` then gets generated automatically.

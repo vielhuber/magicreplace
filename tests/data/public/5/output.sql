@@ -1,0 +1,1 @@
+INSERT INTO `wp_options` VALUES ('', 'a:1:{s:4:\"aaaa\";s:0:\"\";}');

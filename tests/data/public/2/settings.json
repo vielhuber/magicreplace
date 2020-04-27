@@ -1,0 +1,7 @@
+{
+    "replace": {
+        "https://www.xxxxxxxxxxxxxxx.de": "http://xxxxxxxxx.local.vielhuber.de",
+        "www.xxxxxxxxxxxxxxx.de": "xxxxxxxxx.local.vielhuber.de",
+        "wpFastestCache.php": "wpFastestCache.OFF"
+    }
+}
