@@ -30,7 +30,7 @@ class magicreplace
 		foreach($search_replace as $search_replace__key=>$search_replace__value)
 		{
 		    // first find all occurences of the string to replace
-			// this matches serialized and non serialized occurences
+			// this matches serialized and perhaps non serialized occurences
 			preg_match_all('/s:\d.*?('.preg_quote($search_replace__key, '/').').*?\"/', $data, $positions, PREG_OFFSET_CAPTURE);
 		    $position_offset = 0;
 		    if(!empty($positions) && !empty($positions[1])) {
