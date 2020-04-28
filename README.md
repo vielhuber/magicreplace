@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/vielhuber/magicreplace.svg?branch=master)](https://travis-ci.org/vielhuber/magicreplace)
+
 # ✨ magicreplace ✨
 
 magicreplace is a search/replace class with zero overhead.
