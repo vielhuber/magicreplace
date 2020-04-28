@@ -14,9 +14,11 @@ class magicreplace
 		elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command = 'split'; }
 		else { die('unknown operating system'); }
         exec($command . ' -C 1m "'.$input.'" "'.$input.'-SPLITTED"');
-        foreach( glob($input.'-SPLITTED*') as $filename )
+        $filenames = glob($input.'-SPLITTED*');
+        foreach( $filenames as $filenames__key=>$filenames__value )
         {
-            magicreplace::runPart($filename, $filename, $search_replace);
+            magicreplace::runPart($filenames__value, $filenames__value, $search_replace);
+            echo self::progressBar($filenames__key,count($filenames));
         }
         // join files
         exec('cat "'.$input.'-SPLITTED"* > "'.$output.'"');
@@ -31,16 +33,21 @@ class magicreplace
 		{
 		    // first find all occurences of the string to replace
 			// this matches serialized and perhaps non serialized occurences
-			preg_match_all('/s:\d.*?('.preg_quote($search_replace__key, '/').').*?\"/', $data, $positions, PREG_OFFSET_CAPTURE);
+            // i've spend hours of finding an efficient regex (tried s:\d.*, negative lookaheads, ...); they are either too slow or reach nesting limits
+            // the following regex finds all strings to replace that are followed by "; - important is the non greedy operator "?"
+            // the initial pointer is also set to to " (and it goes outside to the left and right)
+            // we cannot start from the beginning, because "'https://tld.com', 'a:1:{s:4:\"home\";s:15:\"https://tld.com\";}'" starts before the serialized string
+			preg_match_all('/'.preg_quote($search_replace__key, '/').'.*?(\"\;)/', $data, $positions, PREG_OFFSET_CAPTURE);
 		    $position_offset = 0;
 		    if(!empty($positions) && !empty($positions[1])) {
 		    foreach($positions[1] as $positions__value) {
 				// determine begin and end of (potentially serialized) string
-		        $pointer = $positions__value[1]+strpos($positions__value[0],$search_replace__key)+$position_offset;
+                $data_length = strlen($data);
+		        $pointer = $positions__value[1]-1+$position_offset;
 		        while($pointer >= 1 && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && $data{$pointer+1} != '\'')) { $pointer--; }
 		        $pos_begin = $pointer+1;
-		        $pointer = $positions__value[1]+strpos($positions__value[0],$search_replace__key)+$position_offset;
-		        while($pointer < strlen($data) && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && ($pointer+1 === strlen($data) || $data{$pointer+1} != '\''))) { $pointer++; }
+		        $pointer = $positions__value[1]-1+$position_offset;
+		        while($pointer < $data_length && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && ($pointer+1 === $data_length || $data{$pointer+1} != '\''))) { $pointer++; }
 		        $pos_end = $pointer;
 
 				// string
@@ -120,9 +127,9 @@ class magicreplace
 		// special case: class cannot be unserialized (sometimes yoast serializes data at runtime when a class is available), return empty string
 		elseif( is_string($data) && strpos($data,'C:') === 0 ) { return ''; }
 		// if this is normal serialized data
-		elseif( @unserialize($data) !== false ) { $data = self::string(unserialize($data), $search_replace, true, $level+1); }
+		elseif( ($unserialize = @unserialize($data)) !== false ) { $data = self::string($unserialize, $search_replace, true, $level+1); }
 		// special case: if data contains new lines and is recognized after replacing them AND/OR if data contains double quotes and is recognized after replacing them
-		elseif( is_string($data) && @unserialize(self::mask($data)) !== false ) { $data = self::string(unserialize(self::mask($data)), $search_replace, true, $level+1); }
+		elseif( is_string($data) && ($unserialize = @unserialize(self::mask($data))) !== false ) { $data = self::string($unserialize, $search_replace, true, $level+1); }
 		elseif( is_array($data) )
 		{
 			$tmp = [];
@@ -150,6 +157,12 @@ class magicreplace
 		if( stristr(PHP_OS, 'LINUX') ) { return 'linux'; }
 		return 'unknown';
 	}
+
+    private static function progressBar($done, $total, $info="", $width=50) {
+        $perc = round(($done * 100) / $total);
+        $bar = round(($width * $perc) / 100);
+        return sprintf("%s%%[%s>%s]%s\r", $perc, str_repeat("=", $bar), str_repeat(" ", $width-$bar), $info);
+    }
 }
 
 // cli usage
