@@ -2,7 +2,7 @@
 namespace vielhuber\magicreplace;
 class magicreplace
 {
-    public static function run($input, $output, $search_replace)
+    public static function run($input, $output, $search_replace, $progress = false)
     {
         clearstatcache();
         if( filesize( $input ) === 0 ) {
@@ -18,7 +18,9 @@ class magicreplace
         foreach( $filenames as $filenames__key=>$filenames__value )
         {
             magicreplace::runPart($filenames__value, $filenames__value, $search_replace);
-            echo self::progressBar($filenames__key,count($filenames));
+            if( $progress === true ) {
+                echo self::progressBar($filenames__key,count($filenames));
+            }
         }
         // join files
         exec('cat "'.$input.'-SPLITTED"* > "'.$output.'"');
@@ -183,6 +185,6 @@ if (php_sapi_name() == 'cli' && isset($argv) && !empty($argv) && isset($argv[1])
         if ($argv__key % 2 == 0) { continue; }
         $search_replace[ $argv[ $argv__key ] ] = $argv[ $argv__key + 1 ];
     }
-    magicreplace::run($input, $output, $search_replace);
+    magicreplace::run($input, $output, $search_replace, true);
     die('done...');
 }
