@@ -148,7 +148,7 @@ class Test extends \PHPUnit\Framework\TestCase
         shell_exec(
             'php ' .
                 __DIR__ .
-                '/tools/interconnect-search-replace/4.1.1/srdb.cli.php --host ' .
+                '/tools/interconnect-search-replace/4.1.2/srdb.cli.php --host ' .
                 $this->settings->source->host .
                 ' --name ' .
                 $this->settings->source->database .

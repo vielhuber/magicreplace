@@ -46,10 +46,10 @@ class magicreplace
                 // determine begin and end of (potentially serialized) string
                 $data_length = strlen($data);
                 $pointer = $positions__value[1]-1+$position_offset;
-                while($pointer >= 1 && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && $data{$pointer+1} != '\'')) { $pointer--; }
+                while($pointer >= 1 && !($data[$pointer] == '\'' && $data[$pointer-1] != '\\' && $data[$pointer-1] != '\'' && $data[$pointer+1] != '\'')) { $pointer--; }
                 $pos_begin = $pointer+1;
                 $pointer = $positions__value[1]-1+$position_offset;
-                while($pointer < $data_length && !($data{$pointer} == '\'' && $data{$pointer-1} != '\\' && $data{$pointer-1} != '\'' && ($pointer+1 === $data_length || $data{$pointer+1} != '\''))) { $pointer++; }
+                while($pointer < $data_length && !($data[$pointer] == '\'' && $data[$pointer-1] != '\\' && $data[$pointer-1] != '\'' && ($pointer+1 === $data_length || $data[$pointer+1] != '\''))) { $pointer++; }
                 $pos_end = $pointer;
 
                 // string

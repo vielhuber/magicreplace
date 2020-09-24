@@ -2,7 +2,7 @@
 
 # ✨ magicreplace ✨
 
-magicreplace is a search/replace class with zero overhead.
+magicreplace is a search replace tool for migrating databases.
 
 ## Intro
 
@@ -32,11 +32,11 @@ and you will get an ugly error.
 ### How is magicreplace different from those tools?
 
 -   Fast (~5sec runtime on 100mb database file with 300.000 rows)
--   Lightweight: only <10kb in size
+-   Lightweight: Only <10kb in size
 -   Works also on big files with small memory limit settings
--   File based: does not need a database or a wp installation - works on plain (sql) files
--   Local usage: does not need a remote server or a webservice
--   Multi replace: does multiple replaces
+-   File based: Does not need a database or a wp installation - works on plain (sql) files
+-   Local usage: Does not need a remote server or a webservice
+-   Multi replace: Does multiple replaces
 -   Considers edge cases: Can handle objects and even references
 -   Ignores classes that are not available at runtime
 -   Can be used either with the command line or as a class
@@ -61,6 +61,10 @@ brew install coreutils
 ##### Windows
 
 Runs out of the box with [WSL/WSL2](https://docs.microsoft.com/en-us/windows/wsl/about)/[Cygwin](https://cygwin.com/install.html).
+
+##### Linux
+
+–
 
 ### Installation
 
@@ -95,12 +99,12 @@ magicreplace::run('input.sql', 'output.sql', ['search-1' => 'replace-2', 'search
 
 If you want for example to replace http://www.foo.tld with https://www.bar.tld, the safest method to do so is with the following replacements (in the given order):
 
--   http://www.foo.tld https://www.bar.tld
--   https://www.foo.tld https://www.bar.tld
--   http://foo.tld https://www.bar.tld
--   https://foo.tld https://www.bar.tld
--   www.foo.tld www.bar.tld
--   foo.tld bar.tld
+-   `http://www.foo.tld` `https://www.bar.tld`
+-   `https://www.foo.tld` `https://www.bar.tld`
+-   `http://foo.tld` `https://www.bar.tld`
+-   `https://foo.tld` `https://www.bar.tld`
+-   `www.foo.tld` `www.bar.tld`
+-   `foo.tld` `bar.tld`
 
 ## Testing
 
@@ -141,4 +145,4 @@ You can even auto generate test cases (that compares magicreplace to [Search-Rep
 }
 ```
 
-`input.sql` and `output.sql` then gets generated automatically. You also can provide a `whitelist.sql` file that includes all lines from `input.sql` that should be ignored (e.g. where magicreplace acts differently from Search-Replace-DB).
+`input.sql` and `output.sql` then get generated automatically. After you rerun the tests, these generated files are used. If you want to generate them again, just delete them before running the test. You also can provide a `whitelist.sql` file that includes all lines from `input.sql` that should be ignored (e.g. where magicreplace acts differently from Search-Replace-DB).
