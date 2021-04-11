@@ -45,11 +45,31 @@ class magicreplace
             foreach($positions[1] as $positions__value) {
                 // determine begin and end of (potentially serialized) string
                 $data_length = strlen($data);
+
                 $pointer = $positions__value[1]-1+$position_offset;
-                while($pointer >= 1 && !($data[$pointer] == '\'' && $data[$pointer-1] != '\\' && $data[$pointer-1] != '\'' && $data[$pointer+1] != '\'')) { $pointer--; }
+                // slow version
+                //while($pointer >= 1 && !($data[$pointer] == '\'' && $data[$pointer-1] != '\\' && $data[$pointer-1] != '\'' && $data[$pointer+1] != '\'')) { $pointer--; }
+                // fast version
+                $data_inverted = strrev($data);
+                $pointer_inverted = $data_length - $pointer;
+                if( preg_match('/([^\\\']|^)\'([^\\\\\']|$)/', $data_inverted, $matches, PREG_OFFSET_CAPTURE, $pointer_inverted) ) {
+                    $pointer = $data_length - $matches[0][1] - 2;
+                }
+                else {
+                    $pointer = 0;
+                }
                 $pos_begin = $pointer+1;
+
                 $pointer = $positions__value[1]-1+$position_offset;
-                while($pointer < $data_length && !($data[$pointer] == '\'' && $data[$pointer-1] != '\\' && $data[$pointer-1] != '\'' && ($pointer+1 === $data_length || $data[$pointer+1] != '\''))) { $pointer++; }
+                // slow version
+                //while($pointer < $data_length && !($data[$pointer] == '\'' && $data[$pointer-1] != '\\' && $data[$pointer-1] != '\'' && ($pointer+1 === $data_length || $data[$pointer+1] != '\''))) { $pointer++; }
+                // fast version
+                if( preg_match('/([^\\\\\']|^)\'([^\\\']|$)/', $data, $matches, PREG_OFFSET_CAPTURE, $pointer) ) {
+                    $pointer = $matches[0][1] + 1;
+                }
+                else {
+                    $pointer = $data_length;
+                }
                 $pos_end = $pointer;
 
                 // string
@@ -164,6 +184,18 @@ class magicreplace
         $perc = round(($done * 100) / $total);
         $bar = round(($width * $perc) / 100);
         return sprintf("%s%%[%s>%s]%s\r", $perc, str_repeat("=", $bar), str_repeat(" ", $width-$bar), $info);
+    }
+
+    private static function strrev($str)
+    {
+        if (!is_string($str) || $str == '') {
+            return $str;
+        }
+        $r = '';
+        for ($i = mb_strlen($str); $i >= 0; $i--) {
+            $r .= mb_substr($str, $i, 1);
+        }
+        return $r;
     }
 }
 
