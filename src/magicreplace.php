@@ -149,9 +149,9 @@ class magicreplace
         // special case: class cannot be unserialized (sometimes yoast serializes data at runtime when a class is available), return empty string
         elseif( is_string($data) && strpos($data,'C:') === 0 ) { return ''; }
         // if this is normal serialized data
-        elseif( ($unserialize = @unserialize($data)) !== false ) { $data = self::string($unserialize, $search_replace, true, $level+1); }
+        elseif( self::is_serialized($data) ) { $unserialize = unserialize($data); $data = self::string($unserialize, $search_replace, true, $level+1); }
         // special case: if data contains new lines and is recognized after replacing them AND/OR if data contains double quotes and is recognized after replacing them
-        elseif( is_string($data) && ($unserialize = @unserialize(self::mask($data))) !== false ) { $data = self::string($unserialize, $search_replace, true, $level+1); }
+        elseif( is_string($data) && self::is_serialized(self::mask($data)) ) { $unserialize = unserialize(self::mask($data)); $data = self::string($unserialize, $search_replace, true, $level+1); }
         elseif( is_array($data) )
         {
             $tmp = [];
@@ -196,6 +196,20 @@ class magicreplace
             $r .= mb_substr($str, $i, 1);
         }
         return $r;
+    }
+
+    private static function is_serialized($data)
+    {
+        if (!is_string($data) || $data == '') {
+            return false;
+        }
+        set_error_handler(function ($errno, $errstr) {});
+        $unserialized = unserialize($data);
+        restore_error_handler();
+        if ($data !== 'b:0;' && $unserialized === false) {
+            return false;
+        }
+        return true;
     }
 }
 
