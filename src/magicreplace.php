@@ -31,6 +31,26 @@ class magicreplace
     {
         if( !file_exists($input) ) { die('error'); }
         $data = file_get_contents($input);
+
+        // (ugly) betheme support
+        $betheme_opening_tag = '\'mfn-page-items\',\'';
+        $betheme_support = strpos($data, $betheme_opening_tag ) !== false;
+        if( $betheme_support ) {
+            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'').'/', $data, $positions, PREG_OFFSET_CAPTURE);
+            $position_offset = 0;
+            if(!empty($positions) && !empty($positions[1])) {
+                foreach($positions[1] as $positions__value) {
+                    $pos_begin = $positions__value[1] + $position_offset;
+                    $pos_end = $pos_begin + strlen($positions__value[0]);
+                    $base64_encoded = $positions__value[0];
+                    $base64_decoded = base64_decode($base64_encoded);
+                    $base64_decoded = self::mysql_escape_mimic($base64_decoded);
+                    $data = substr($data, 0, $pos_begin).$base64_decoded.substr($data, $pos_end);
+                    $position_offset += (strlen($base64_decoded) - strlen($positions__value[0]));
+                }
+            }
+        }
+
         foreach($search_replace as $search_replace__key=>$search_replace__value)
         {
             // first find all occurences of the string to replace
@@ -122,6 +142,24 @@ class magicreplace
             // revert changes from above (if something went wrong)
             $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);
         }
+
+        // betheme revert
+        if( $betheme_support ) {
+            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'').'/', $data, $positions, PREG_OFFSET_CAPTURE);
+            $position_offset = 0;
+            if(!empty($positions) && !empty($positions[1])) {
+                foreach($positions[1] as $positions__value) {
+                    $pos_begin = $positions__value[1] + $position_offset;
+                    $pos_end = $pos_begin + strlen($positions__value[0]);
+                    $base64_decoded = $positions__value[0];
+                    $base64_decoded = self::mysql_escape_mimic($base64_decoded, true);
+                    $base64_encoded = base64_encode($base64_decoded);
+                    $data = substr($data, 0, $pos_begin).$base64_encoded.substr($data, $pos_end);
+                    $position_offset += (strlen($base64_encoded) - strlen($positions__value[0]));
+                }
+            }
+        }
+
         file_put_contents($output, $data);
     }
 
@@ -210,6 +248,15 @@ class magicreplace
             return false;
         }
         return true;
+    }
+
+    private static function mysql_escape_mimic($inp, $reverse = false) {
+        $_1 = ['\\', "\0", "\n", "\r", "'", '"', "\x1a"];
+        $_2 = ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'];
+        if(!empty($inp) && is_string($inp)) {
+            return $reverse === false ? str_replace($_1, $_2, $inp) : str_replace($_2, $_1, $inp);
+        }
+        return $inp;
     }
 }
 

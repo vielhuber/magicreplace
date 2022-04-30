@@ -43,6 +43,7 @@ and you will get an ugly error.
 -   Acts carefully: If serialization fails, nothing is changed
 -   Never changes data (out of bound ints are preserved, auto generated dates are not updated)
 -   Does its work in junks to overcome php limits
+-   Supports replacements in special base64 strings (e.g. in BeTheme)
 
 ### Disclaimer
 
