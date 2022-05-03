@@ -36,7 +36,7 @@ class magicreplace
         $betheme_opening_tag = '\'mfn-page-items\',\'';
         $betheme_support = strpos($data, $betheme_opening_tag ) !== false;
         if( $betheme_support ) {
-            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'').'/', $data, $positions, PREG_OFFSET_CAPTURE);
+            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'\);(\r\n|\r|\n)').'/', $data, $positions, PREG_OFFSET_CAPTURE);
             $position_offset = 0;
             if(!empty($positions) && !empty($positions[1])) {
                 foreach($positions[1] as $positions__value) {
@@ -145,7 +145,7 @@ class magicreplace
 
         // betheme revert
         if( $betheme_support ) {
-            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'').'/', $data, $positions, PREG_OFFSET_CAPTURE);
+            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'\);(\r\n|\r|\n)').'/', $data, $positions, PREG_OFFSET_CAPTURE);
             $position_offset = 0;
             if(!empty($positions) && !empty($positions[1])) {
                 foreach($positions[1] as $positions__value) {
