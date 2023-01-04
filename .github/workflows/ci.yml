@@ -20,6 +20,8 @@ jobs:
               run: which split
             - name: Test 2
               run: split --version
+            - name: Test 3
+              run: split --help
 
             - name: Install composer
               uses: php-actions/composer@v6

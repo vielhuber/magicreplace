@@ -13,6 +13,10 @@ class magicreplace
         if( self::getOs() === 'mac' ) { $command = 'gsplit'; }
         elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command = 'split'; }
         else { die('unknown operating system'); }
+
+        print_r(shell_exec('/usr/bin/split --version'));
+        print_r(shell_exec('split --version'));
+
         exec($command . ' -C 1m "'.$input.'" "'.$input.'-SPLITTED"');
         $filenames = glob($input.'-SPLITTED*');
         foreach( $filenames as $filenames__key=>$filenames__value )
