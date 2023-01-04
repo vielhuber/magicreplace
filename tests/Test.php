@@ -7,13 +7,6 @@ class Test extends \PHPUnit\Framework\TestCase
 
     public function testAll()
     {
-        print_r(PHP_EOL.'##########################'.PHP_EOL);
-        print_r(shell_exec('/usr/bin/split --version'));
-        print_r(PHP_EOL.'##########################'.PHP_EOL);
-        print_r(shell_exec('split --version'));
-        print_r(PHP_EOL.'##########################'.PHP_EOL);
-        die();
-
         $rii = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator('./tests/data', RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::SELF_FIRST,
