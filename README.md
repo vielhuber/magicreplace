@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/vielhuber/magicreplace.svg?branch=master)](https://travis-ci.com/vielhuber/magicreplace)
+[![build status](https://github.com/vielhuber/magicreplace/actions/workflows/ci.yml/badge.svg)](https://github.com/vielhuber/magicreplace/actions)
 
 # ✨ magicreplace ✨
 
