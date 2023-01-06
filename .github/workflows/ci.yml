@@ -25,7 +25,7 @@ jobs:
                      if [ "$RUNNER_OS" == "Linux" ]; then
                           sudo apt-get install diffutils exiftool
                      elif [ "$RUNNER_OS" == "macOS" ]; then
-                          sudo brew install coreutils
+                          brew install coreutils
                      elif [ "$RUNNER_OS" == "Windows" ]; then
                           choco install important_windows_software
                      fi
