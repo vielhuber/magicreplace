@@ -20,6 +20,17 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v3
 
+            - name: Libraries
+              run:   |
+                     if [ "$RUNNER_OS" == "Linux" ]; then
+                          apt-get install diffutils exiftool
+                     elif [ "$RUNNER_OS" == "macOS" ]; then
+                          brew install coreutils
+                     elif [ "$RUNNER_OS" == "Windows" ]; then
+                          choco install important_windows_software
+                     fi
+              shell: bash
+
             - name: PHP
               uses: shivammathur/setup-php@v2
               with:
