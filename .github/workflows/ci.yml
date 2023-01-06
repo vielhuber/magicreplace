@@ -7,16 +7,23 @@ on: [push]
 
 jobs:
     build-test:
-        runs-on: ubuntu-latest
+        runs-on: ${{ matrix.operating-system }}
+
+        strategy:
+            matrix:
+                operating-system: ['ubuntu-latest', 'macos-latest']
+                php-versions: ['7.4', '8.0', '8.1']
+
+        name: ${{ matrix.operating-system }} (PHP ${{ matrix.php-versions }})
 
         steps:
-            - name: Checkout code
+            - name: Checkout
               uses: actions/checkout@v3
 
             - name: PHP
               uses: shivammathur/setup-php@v2
               with:
-                  php-version: '8.1'
+                  php-version: '${{ matrix.php-versions }}'
                   extensions: gd
                   tools: composer, phpunit
 
