@@ -10,10 +10,15 @@ class magicreplace
             return;
         }
         // split source file in several files
-        if( self::getOs() === 'mac' ) { $command = 'gsplit'; }
-        elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command = 'split'; }
+        // so that we don't get a memory limit error in php
+        // on mac we don't use "gsplit" here, since it has a weird bug
+        // where corrupted characters get introduced after splitting
+        // instead we use split but use another argument (-C is not available)
+        $command = 'split';       
+        if( self::getOs() === 'mac' ) { $command .= ' -l 3000'; }
+        elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command .= ' -C 1m'; }
         else { die('unknown operating system'); }
-        exec($command . ' -C 1m "'.$input.'" "'.$input.'-SPLITTED"');
+        exec($command . ' "'.$input.'" "'.$input.'-SPLITTED"');
         $filenames = glob($input.'-SPLITTED*');
         foreach( $filenames as $filenames__key=>$filenames__value )
         {
