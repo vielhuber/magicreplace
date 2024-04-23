@@ -15,7 +15,7 @@ class magicreplace
         // where corrupted characters get introduced after splitting
         // instead we use split but use another argument (-C is not available)
         $command = 'split';       
-        if( self::getOs() === 'mac' ) { $command .= ' -l 3000'; }
+        if( self::getOs() === 'mac' ) { $command .= ' -l 10000 -a 4'; }
         elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command .= ' -C 1m'; }
         else { die('unknown operating system'); }
         exec($command . ' "'.$input.'" "'.$input.'-SPLITTED"');
