@@ -70,7 +70,7 @@ Runs out of the box with [WSL/WSL2](https://docs.microsoft.com/en-us/windows/wsl
 ### Installation
 
 ```
-wget https://raw.githubusercontent.com/vielhuber/magicreplace/master/src/magicreplace.php
+wget https://raw.githubusercontent.com/vielhuber/magicreplace/main/src/magicreplace.php
 ```
 
 ### Usage
