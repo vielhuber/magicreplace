@@ -1,4 +1,10 @@
 [![build status](https://github.com/vielhuber/magicreplace/actions/workflows/ci.yml/badge.svg)](https://github.com/vielhuber/magicreplace/actions)
+[![GitHub Tag](https://img.shields.io/github/v/tag/vielhuber/magicreplace)](https://github.com/vielhuber/magicreplace/tags)
+[![Code Style](https://img.shields.io/badge/code_style-psr--12-ff69b4.svg)](https://www.php-fig.org/psr/psr-12/)
+[![License](https://img.shields.io/github/license/vielhuber/magicreplace)](https://github.com/vielhuber/magicreplace/blob/main/LICENSE.md)
+[![Last Commit](https://img.shields.io/github/last-commit/vielhuber/magicreplace)](https://github.com/vielhuber/magicreplace/commits)
+[![PHP Version Support](https://img.shields.io/packagist/php-v/vielhuber/magicreplace)](https://packagist.org/packages/vielhuber/magicreplace)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/vielhuber/magicreplace)](https://packagist.org/packages/vielhuber/magicreplace)
 
 # ✨ magicreplace ✨
 
