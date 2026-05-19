@@ -1,11 +1,13 @@
 <?php
+declare(strict_types=1);
+
 use vielhuber\magicreplace\magicreplace;
 
-class Test extends \PHPUnit\Framework\TestCase
+final class Test extends \PHPUnit\Framework\TestCase
 {
-    protected $settings;
+    protected ?\stdClass $settings = null;
 
-    public function testAll()
+    public function testAll(): void
     {
         $rii = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator('./tests/data', RecursiveDirectoryIterator::SKIP_DOTS),
@@ -85,7 +87,7 @@ class Test extends \PHPUnit\Framework\TestCase
                 $this_failed = false;
                 foreach ($input as $input__key => $input__value) {
                     if (
-                        ($output[$input__key] !== $expected[$input__key]) &
+                        ($output[$input__key] !== $expected[$input__key]) &&
                         !in_array($input[$input__key], $whitelist)
                     ) {
                         $this_failed = true;
@@ -95,7 +97,9 @@ class Test extends \PHPUnit\Framework\TestCase
                 if ($this_failed === true) {
                     $failed[] = $folders__value;
                 } else {
-                    @unlink($folders__value . '/expected.sql');
+                    if (file_exists($folders__value . '/expected.sql')) {
+                        unlink($folders__value . '/expected.sql');
+                    }
                     $this->assertTrue(true);
                 }
             }
@@ -107,7 +111,7 @@ class Test extends \PHPUnit\Framework\TestCase
         }
     }
 
-    private function dump($filename)
+    private function dump(string $filename): void
     {
         exec(
             'mysqldump --extended-insert=false --skip-comments -h ' .
@@ -125,7 +129,7 @@ class Test extends \PHPUnit\Framework\TestCase
         );
     }
 
-    private function restore($filename)
+    private function restore(string $filename): void
     {
         exec(
             'mysql -h ' .
@@ -143,7 +147,7 @@ class Test extends \PHPUnit\Framework\TestCase
         );
     }
 
-    private function replaceWithInterconnect($search, $replace)
+    private function replaceWithInterconnect(string $search, string $replace): void
     {
         shell_exec(
             'php ' .
@@ -166,8 +170,8 @@ class Test extends \PHPUnit\Framework\TestCase
         );
     }
 
-    private function logCli($msg)
+    private function logCli(string $message): void
     {
-        fwrite(STDERR, print_r($msg . PHP_EOL, true));
+        fwrite(STDERR, $message . PHP_EOL);
     }
 }

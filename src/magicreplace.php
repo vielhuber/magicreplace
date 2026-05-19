@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 namespace vielhuber\magicreplace;
-class magicreplace
+final class magicreplace
 {
-    public static function run($input, $output, $search_replace, $progress = false)
+    public static function run(string $input, string $output, array $search_replace, bool $progress = false): void
     {
         clearstatcache();
         if( filesize( $input ) === 0 ) {
@@ -22,7 +24,7 @@ class magicreplace
         $filenames = glob($input.'-SPLITTED*');
         foreach( $filenames as $filenames__key=>$filenames__value )
         {
-            magicreplace::runPart($filenames__value, $filenames__value, $search_replace);
+            self::runPart($filenames__value, $filenames__value, $search_replace);
             if( $progress === true ) {
                 echo self::progressBar($filenames__key,count($filenames));
             }
@@ -32,7 +34,7 @@ class magicreplace
         exec('rm "'.$input.'-SPLITTED"*');
     }
 
-    private static function runPart($input, $output, $search_replace)
+    private static function runPart(string $input, string $output, array $search_replace): void
     {
         if( !file_exists($input) ) { die('error'); }
         $data = file_get_contents($input);
@@ -168,7 +170,7 @@ class magicreplace
         file_put_contents($output, $data);
     }
 
-    private static function mask($data)
+    private static function mask(string $data): string
     {
         $data = str_replace('\\\\"',md5('NOREPLACE1'),$data);
         $data = str_replace('\\\\n',md5('NOREPLACE2'),$data);
@@ -185,7 +187,7 @@ class magicreplace
         return $data;
     }
 
-    private static function string($data, $search_replace, $serialized = false, $level = 0)
+    private static function string(mixed $data, array $search_replace, bool $serialized = false, int $level = 0): mixed
     {
         // special case: if data is boolean false (unserialize would return false)
         if( $data === 'b:0;' ) { $data = self::string(unserialize($data), $search_replace, true, $level+1); }
@@ -215,7 +217,7 @@ class magicreplace
         return $data;
     }
 
-    private static function getOs()
+    private static function getOs(): string
     {
         if( stristr(PHP_OS, 'DAR') ) { return 'mac'; }
         if( stristr(PHP_OS, 'WIN') || stristr(PHP_OS, 'CYGWIN') ) { return 'windows'; }
@@ -223,13 +225,13 @@ class magicreplace
         return 'unknown';
     }
 
-    private static function progressBar($done, $total, $info="", $width=50) {
-        $perc = round(($done * 100) / $total);
-        $bar = round(($width * $perc) / 100);
+    private static function progressBar(int $done, int $total, string $info = "", int $width = 50): string {
+        $perc = (int) round(($done * 100) / $total);
+        $bar = (int) round(($width * $perc) / 100);
         return sprintf("%s%%[%s>%s]%s\r", $perc, str_repeat("=", $bar), str_repeat(" ", $width-$bar), $info);
     }
 
-    private static function strrev($str)
+    private static function strrev(mixed $str): mixed
     {
         if (!is_string($str) || $str == '') {
             return $str;
@@ -241,21 +243,27 @@ class magicreplace
         return $r;
     }
 
-    private static function is_serialized($data)
+    private static function is_serialized(mixed $data): bool
     {
         if (!is_string($data) || $data == '') {
             return false;
         }
-        set_error_handler(function ($errno, $errstr) {});
-        $unserialized = unserialize($data);
-        restore_error_handler();
+        set_error_handler(function (int $errno, string $errstr): bool {
+            return true;
+        });
+        try {
+            $unserialized = unserialize($data);
+        }
+        finally {
+            restore_error_handler();
+        }
         if ($data !== 'b:0;' && $unserialized === false) {
             return false;
         }
         return true;
     }
 
-    private static function mysql_escape_mimic($inp, $reverse = false) {
+    private static function mysql_escape_mimic(mixed $inp, bool $reverse = false): mixed {
         $_1 = ['\\', "\0", "\n", "\r", "'", '"', "\x1a"];
         $_2 = ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'];
         if(!empty($inp) && is_string($inp)) {
