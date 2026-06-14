@@ -20,8 +20,10 @@ final class magicreplace
         if( self::getOs() === 'mac' ) { $command .= ' -l 10000 -a 4'; }
         elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command .= ' -C 1m'; }
         else { die('unknown operating system'); }
-        exec($command . ' "'.$input.'" "'.$input.'-SPLITTED"');
-        $filenames = glob($input.'-SPLITTED*');
+        $split_prefix = $input . '-SPLITTED';
+        exec($command . ' ' . escapeshellarg($input) . ' ' . escapeshellarg($split_prefix));
+        $filenames = glob($split_prefix . '*') ?: [];
+        sort($filenames);
         foreach( $filenames as $filenames__key=>$filenames__value )
         {
             self::runPart($filenames__value, $filenames__value, $search_replace);
@@ -30,8 +32,11 @@ final class magicreplace
             }
         }
         // join files
-        exec('cat "'.$input.'-SPLITTED"* > "'.$output.'"');
-        exec('rm "'.$input.'-SPLITTED"*');
+        file_put_contents($output, '');
+        foreach( $filenames as $filenames__value ) {
+            file_put_contents($output, file_get_contents($filenames__value), FILE_APPEND);
+            unlink($filenames__value);
+        }
     }
 
     private static function runPart(string $input, string $output, array $search_replace): void
@@ -190,13 +195,13 @@ final class magicreplace
     private static function string(mixed $data, array $search_replace, bool $serialized = false, int $level = 0): mixed
     {
         // special case: if data is boolean false (unserialize would return false)
-        if( $data === 'b:0;' ) { $data = self::string(unserialize($data), $search_replace, true, $level+1); }
+        if( $data === 'b:0;' ) { $data = self::string(self::unserialize($data), $search_replace, true, $level+1); }
         // special case: class cannot be unserialized (sometimes yoast serializes data at runtime when a class is available), return empty string
         elseif( is_string($data) && strpos($data,'C:') === 0 ) { return ''; }
         // if this is normal serialized data
-        elseif( self::is_serialized($data) ) { $unserialize = unserialize($data); $data = self::string($unserialize, $search_replace, true, $level+1); }
+        elseif( self::is_serialized($data) ) { $unserialize = self::unserialize($data); $data = self::string($unserialize, $search_replace, true, $level+1); }
         // special case: if data contains new lines and is recognized after replacing them AND/OR if data contains double quotes and is recognized after replacing them
-        elseif( is_string($data) && self::is_serialized(self::mask($data)) ) { $unserialize = unserialize(self::mask($data)); $data = self::string($unserialize, $search_replace, true, $level+1); }
+        elseif( is_string($data) && self::is_serialized(self::mask($data)) ) { $unserialize = self::unserialize(self::mask($data)); $data = self::string($unserialize, $search_replace, true, $level+1); }
         elseif( is_array($data) )
         {
             $tmp = [];
@@ -252,7 +257,7 @@ final class magicreplace
             return true;
         });
         try {
-            $unserialized = unserialize($data);
+            $unserialized = self::unserialize($data);
         }
         finally {
             restore_error_handler();
@@ -261,6 +266,11 @@ final class magicreplace
             return false;
         }
         return true;
+    }
+
+    private static function unserialize(string $data): mixed
+    {
+        return unserialize($data, ['allowed_classes' => ['stdClass']]);
     }
 
     private static function mysql_escape_mimic(mixed $inp, bool $reverse = false): mixed {
