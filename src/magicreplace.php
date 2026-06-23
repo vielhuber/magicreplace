@@ -44,22 +44,33 @@ final class magicreplace
         if( !file_exists($input) ) { die('error'); }
         $data = file_get_contents($input);
 
-        // (ugly) betheme support
-        $betheme_opening_tag = '\'mfn-page-items\',\'';
-        $betheme_support = strpos($data, $betheme_opening_tag ) !== false;
-        if( $betheme_support ) {
-            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'\);(\r\n|\r|\n)').'/', $data, $positions, PREG_OFFSET_CAPTURE);
-            $position_offset = 0;
-            if(!empty($positions) && !empty($positions[1])) {
-                foreach($positions[1] as $positions__value) {
-                    $pos_begin = $positions__value[1] + $position_offset;
-                    $pos_end = $pos_begin + strlen($positions__value[0]);
-                    $base64_encoded = $positions__value[0];
-                    $base64_decoded = base64_decode($base64_encoded);
-                    $base64_decoded = self::mysql_escape_mimic($base64_decoded);
-                    $data = substr($data, 0, $pos_begin).$base64_decoded.substr($data, $pos_end);
-                    $position_offset += (strlen($base64_decoded) - strlen($positions__value[0]));
+        preg_match_all('/\'([A-Za-z0-9+\/]{16,}={0,2})\'/', $data, $positions, PREG_OFFSET_CAPTURE);
+        $position_offset = 0;
+        if(!empty($positions) && !empty($positions[1])) {
+            foreach($positions[1] as $positions__value) {
+                $base64_encoded = $positions__value[0];
+                if(strlen($base64_encoded) % 4 !== 0) { continue; }
+                $base64_decoded = base64_decode($base64_encoded, true);
+                if($base64_decoded === false) { continue; }
+                if(self::is_serialized($base64_decoded)) { $base64_replaced = self::string($base64_decoded, $search_replace); }
+                else {
+                    if(!self::isText($base64_decoded)) { continue; }
+                    $base64_replaced = $base64_decoded;
+                    foreach($search_replace as $search_replace__key => $search_replace__value) {
+                        $base64_replaced = str_replace($search_replace__key, $search_replace__value, $base64_replaced);
+                        $search_replace__key_json = self::jsonEncodedString($search_replace__key);
+                        $search_replace__value_json = self::jsonEncodedString($search_replace__value);
+                        if($search_replace__key_json !== null && $search_replace__value_json !== null) {
+                            $base64_replaced = str_replace($search_replace__key_json, $search_replace__value_json, $base64_replaced);
+                        }
+                    }
                 }
+                if(!is_string($base64_replaced) || $base64_replaced === $base64_decoded) { continue; }
+                $base64_replaced = base64_encode($base64_replaced);
+                $pos_begin = $positions__value[1] + $position_offset;
+                $pos_end = $pos_begin + strlen($positions__value[0]);
+                $data = substr($data, 0, $pos_begin).$base64_replaced.substr($data, $pos_end);
+                $position_offset += strlen($base64_replaced) - strlen($positions__value[0]);
             }
         }
 
@@ -153,23 +164,6 @@ final class magicreplace
             $data = str_replace($search_replace__key,$search_replace__value,$data);
             // revert changes from above (if something went wrong)
             $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);
-        }
-
-        // betheme revert
-        if( $betheme_support ) {
-            preg_match_all('/'.($betheme_opening_tag.'(.*?)\'\);(\r\n|\r|\n)').'/', $data, $positions, PREG_OFFSET_CAPTURE);
-            $position_offset = 0;
-            if(!empty($positions) && !empty($positions[1])) {
-                foreach($positions[1] as $positions__value) {
-                    $pos_begin = $positions__value[1] + $position_offset;
-                    $pos_end = $pos_begin + strlen($positions__value[0]);
-                    $base64_decoded = $positions__value[0];
-                    $base64_decoded = self::mysql_escape_mimic($base64_decoded, true);
-                    $base64_encoded = base64_encode($base64_decoded);
-                    $data = substr($data, 0, $pos_begin).$base64_encoded.substr($data, $pos_end);
-                    $position_offset += (strlen($base64_encoded) - strlen($positions__value[0]));
-                }
-            }
         }
 
         file_put_contents($output, $data);
@@ -266,6 +260,20 @@ final class magicreplace
             return false;
         }
         return true;
+    }
+
+    private static function isText(string $data): bool
+    {
+        return preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $data) !== 1;
+    }
+
+    private static function jsonEncodedString(mixed $data): ?string
+    {
+        $encoded = json_encode((string) $data);
+        if(!is_string($encoded) || strlen($encoded) < 2) {
+            return null;
+        }
+        return substr($encoded, 1, -1);
     }
 
     private static function unserialize(string $data): mixed

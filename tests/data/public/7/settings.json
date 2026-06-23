@@ -1,0 +1,5 @@
+{
+    "replace": {
+        "https://old.example.test/path": "https://new.example.test/path"
+    }
+}
