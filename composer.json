@@ -2,7 +2,7 @@
     "name": "vielhuber/magicreplace",
     "description": "A search/replace class with zero overhead.",
     "require": {
-        "php": ">=8.5"
+        "php": ">=8.1"
     },
     "license": "MIT",
     "autoload": {
