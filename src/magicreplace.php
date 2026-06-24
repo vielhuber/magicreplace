@@ -162,6 +162,16 @@ final class magicreplace
             }
             // finally replace all occurences (inside and outside of serialized strings)
             $data = str_replace($search_replace__key,$search_replace__value,$data);
+            // also replace json-escaped-slash variants (e.g. revslider stores "https:\/\/...", which mysqldump doubles to "https:\\/\\/...")
+            if( strpos($search_replace__key, '/') !== false ) {
+                foreach( ['\/', '\\\\/'] as $escaped_slash ) {
+                    $data = str_replace(
+                        str_replace('/', $escaped_slash, $search_replace__key),
+                        str_replace('/', $escaped_slash, $search_replace__value),
+                        $data
+                    );
+                }
+            }
             // revert changes from above (if something went wrong)
             $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);
         }
