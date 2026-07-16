@@ -7,8 +7,11 @@ final class magicreplace
     public static function run(string $input, string $output, array $search_replace, bool $progress = false): void
     {
         clearstatcache();
-        if( filesize( $input ) === 0 ) {
-            file_put_contents($output, '');
+        if(!is_file($input) || !is_readable($input)) { self::fail('missing input'); }
+        $input_size = filesize($input);
+        if($input_size === false) { self::fail(); }
+        if($input_size === 0) {
+            if(file_put_contents($output, '') !== 0) { self::fail(); }
             return;
         }
         // split source file in several files
@@ -18,31 +21,72 @@ final class magicreplace
         // instead we use split but use another argument (-C is not available)
         $command = 'split';       
         if( self::getOs() === 'mac' ) { $command .= ' -l 10000 -a 4'; }
-        elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command .= ' -C 1m'; }
-        else { die('unknown operating system'); }
+        elseif ( self::getOs() === 'windows' || self::getOs() === 'linux' ) { $command .= ' -C 1m -a 4'; }
+        else { self::fail('unknown operating system'); }
         $split_prefix = $input . '-SPLITTED';
-        exec($command . ' ' . escapeshellarg($input) . ' ' . escapeshellarg($split_prefix));
         $filenames = glob($split_prefix . '*') ?: [];
+        foreach($filenames as $filenames__value) {
+            if(!is_file($filenames__value) || !unlink($filenames__value)) { self::fail(); }
+        }
+        $command_output = [];
+        $command_exit_code = 0;
+        exec(
+            $command . ' ' . escapeshellarg($input) . ' ' . escapeshellarg($split_prefix) . ' 2>&1',
+            $command_output,
+            $command_exit_code
+        );
+        if($command_exit_code !== 0) { self::fail(); }
+        $filenames = glob($split_prefix . '*') ?: [];
+        if(empty($filenames)) { self::fail(); }
         sort($filenames);
+        $json_search_replace = [];
+        foreach($search_replace as $search_replace__key => $search_replace__value) {
+            $json_search_replace[$search_replace__key] = [
+                'search' => self::jsonEncodedString($search_replace__key),
+                'replace' => self::jsonEncodedString($search_replace__value)
+            ];
+        }
         foreach( $filenames as $filenames__key=>$filenames__value )
         {
-            self::runPart($filenames__value, $filenames__value, $search_replace);
+            self::runPart($filenames__value, $filenames__value, $search_replace, $json_search_replace);
             if( $progress === true ) {
-                echo self::progressBar($filenames__key,count($filenames));
+                echo self::progressBar($filenames__key + 1,count($filenames));
             }
         }
         // join files
-        file_put_contents($output, '');
+        $output_handle = fopen($output, 'wb');
+        if($output_handle === false) { self::fail(); }
         foreach( $filenames as $filenames__value ) {
-            file_put_contents($output, file_get_contents($filenames__value), FILE_APPEND);
-            unlink($filenames__value);
+            $input_size = filesize($filenames__value);
+            if($input_size === false) {
+                fclose($output_handle);
+                self::fail();
+            }
+            $input_handle = fopen($filenames__value, 'rb');
+            if($input_handle === false) {
+                fclose($output_handle);
+                self::fail();
+            }
+            $copied_bytes = stream_copy_to_stream($input_handle, $output_handle);
+            fclose($input_handle);
+            if($copied_bytes !== $input_size || !unlink($filenames__value)) {
+                fclose($output_handle);
+                self::fail();
+            }
         }
+        if(!fclose($output_handle)) { self::fail(); }
     }
 
-    private static function runPart(string $input, string $output, array $search_replace): void
+    private static function runPart(
+        string $input,
+        string $output,
+        array $search_replace,
+        array $json_search_replace
+    ): void
     {
-        if( !file_exists($input) ) { die('error'); }
+        if( !file_exists($input) ) { self::fail(); }
         $data = file_get_contents($input);
+        if($data === false) { self::fail(); }
 
         preg_match_all('/\'([A-Za-z0-9+\/]{16,}={0,2})\'/', $data, $positions, PREG_OFFSET_CAPTURE);
         $position_offset = 0;
@@ -58,8 +102,8 @@ final class magicreplace
                     $base64_replaced = $base64_decoded;
                     foreach($search_replace as $search_replace__key => $search_replace__value) {
                         $base64_replaced = str_replace($search_replace__key, $search_replace__value, $base64_replaced);
-                        $search_replace__key_json = self::jsonEncodedString($search_replace__key);
-                        $search_replace__value_json = self::jsonEncodedString($search_replace__value);
+                        $search_replace__key_json = $json_search_replace[$search_replace__key]['search'];
+                        $search_replace__value_json = $json_search_replace[$search_replace__key]['replace'];
                         if($search_replace__key_json !== null && $search_replace__value_json !== null) {
                             $base64_replaced = str_replace($search_replace__key_json, $search_replace__value_json, $base64_replaced);
                         }
@@ -76,16 +120,22 @@ final class magicreplace
 
         foreach($search_replace as $search_replace__key=>$search_replace__value)
         {
+            $search_replace__exists = strpos($data, $search_replace__key) !== false;
             // first find all occurences of the string to replace
             // this matches serialized and perhaps non serialized occurences
             // i've spend hours of finding an efficient regex (tried s:\d.*, negative lookaheads, ...); they are either too slow or reach nesting limits
             // the following regex finds all strings to replace that are followed by "; - important is the non greedy operator "?"
             // the initial pointer is also set to to " (and it goes outside to the left and right)
             // we cannot start from the beginning, because "'https://tld.com', 'a:1:{s:4:\"home\";s:15:\"https://tld.com\";}'" starts before the serialized string
-            preg_match_all('/'.preg_quote($search_replace__key, '/').'.*?(\"\;)/', $data, $positions, PREG_OFFSET_CAPTURE);
+            $positions = [];
+            if($search_replace__exists) {
+                preg_match_all('/'.preg_quote($search_replace__key, '/').'.*?(\"\;)/', $data, $positions, PREG_OFFSET_CAPTURE);
+            }
             $position_offset = 0;
+            $processed_position_end = -1;
             if(!empty($positions) && !empty($positions[1])) {
             foreach($positions[1] as $positions__value) {
+                if($positions__value[1] < $processed_position_end) { continue; }
                 // determine begin and end of (potentially serialized) string
                 $data_length = strlen($data);
 
@@ -114,6 +164,7 @@ final class magicreplace
                     $pointer = $data_length;
                 }
                 $pos_end = $pointer;
+                $processed_position_end = $pos_end - $position_offset;
 
                 // string
                 $string_before = substr($data, $pos_begin, $pos_end-$pos_begin);
@@ -161,7 +212,9 @@ final class magicreplace
             }
             }
             // finally replace all occurences (inside and outside of serialized strings)
-            $data = str_replace($search_replace__key,$search_replace__value,$data);
+            if($search_replace__exists) {
+                $data = str_replace($search_replace__key,$search_replace__value,$data);
+            }
             // also replace json-escaped-slash variants (e.g. revslider stores "https:\/\/...", which mysqldump doubles to "https:\\/\\/...")
             if( strpos($search_replace__key, '/') !== false ) {
                 foreach( ['\/', '\\\\/'] as $escaped_slash ) {
@@ -176,7 +229,7 @@ final class magicreplace
             $data = str_replace(md5($search_replace__key.(strlen($search_replace__key)*42)),$search_replace__key,$data);
         }
 
-        file_put_contents($output, $data);
+        if(file_put_contents($output, $data) !== strlen($data)) { self::fail(); }
     }
 
     private static function mask(string $data): string
@@ -196,31 +249,38 @@ final class magicreplace
         return $data;
     }
 
-    private static function string(mixed $data, array $search_replace, bool $serialized = false, int $level = 0): mixed
+    private static function string(mixed $data, array $search_replace, bool $serialized = false): mixed
     {
         // special case: if data is boolean false (unserialize would return false)
-        if( $data === 'b:0;' ) { $data = self::string(self::unserialize($data), $search_replace, true, $level+1); }
+        if( $data === 'b:0;' ) { $data = self::string(self::unserialize($data), $search_replace, true); }
         // special case: class cannot be unserialized (sometimes yoast serializes data at runtime when a class is available), return empty string
         elseif( is_string($data) && strpos($data,'C:') === 0 ) { return ''; }
         // if this is normal serialized data
-        elseif( self::is_serialized($data) ) { $unserialize = self::unserialize($data); $data = self::string($unserialize, $search_replace, true, $level+1); }
+        elseif( self::is_serialized($data) ) { $unserialize = self::unserialize($data); $data = self::string($unserialize, $search_replace, true); }
         // special case: if data contains new lines and is recognized after replacing them AND/OR if data contains double quotes and is recognized after replacing them
-        elseif( is_string($data) && self::is_serialized(self::mask($data)) ) { $unserialize = self::unserialize(self::mask($data)); $data = self::string($unserialize, $search_replace, true, $level+1); }
+        elseif( is_string($data) )
+        {
+            $masked_data = self::mask($data);
+            if(self::is_serialized($masked_data)) {
+                $unserialize = self::unserialize($masked_data);
+                $data = self::string($unserialize, $search_replace, true);
+            }
+            else {
+                foreach($search_replace as $search_replace__key => $search_replace__value ) { $data = str_replace($search_replace__key, $search_replace__value, $data); }
+            }
+        }
         elseif( is_array($data) )
         {
             $tmp = [];
-            foreach ( $data as $data__key => $data__value ) { $tmp[ self::string( $data__key, $search_replace, false, $level+1 ) ] = self::string( $data__value, $search_replace, false, $level+1 ); }
+            foreach ( $data as $data__key => $data__value ) { $tmp[ self::string( $data__key, $search_replace ) ] = self::string( $data__value, $search_replace ); }
             $data = $tmp; unset( $tmp );
         }
-        elseif ( is_object( $data ) )
+        elseif ( $data instanceof \__PHP_Incomplete_Class ) { return ''; }
+        elseif ( $data instanceof \stdClass )
         {
-            $tmp = $data; $props = get_object_vars( $data );
-            foreach ( $props as $data__key => $data__value ) { $tmp->{ self::string( $data__key, $search_replace, false, $level+1 ) } = self::string( $data__value, $search_replace, false, $level+1 ); }
+            $tmp = new \stdClass(); $props = get_object_vars( $data );
+            foreach ( $props as $data__key => $data__value ) { $tmp->{ self::string( $data__key, $search_replace ) } = self::string( $data__value, $search_replace ); }
             $data = $tmp; unset( $tmp );
-        }
-        elseif( is_string($data) )
-        {
-            foreach($search_replace as $search_replace__key => $search_replace__value ) { $data = str_replace($search_replace__key, $search_replace__value, $data); }
         }
         if( $serialized === true ) { return serialize($data); }
         return $data;
@@ -238,18 +298,6 @@ final class magicreplace
         $perc = (int) round(($done * 100) / $total);
         $bar = (int) round(($width * $perc) / 100);
         return sprintf("%s%%[%s>%s]%s\r", $perc, str_repeat("=", $bar), str_repeat(" ", $width-$bar), $info);
-    }
-
-    private static function strrev(mixed $str): mixed
-    {
-        if (!is_string($str) || $str == '') {
-            return $str;
-        }
-        $r = '';
-        for ($i = mb_strlen($str); $i >= 0; $i--) {
-            $r .= mb_substr($str, $i, 1);
-        }
-        return $r;
     }
 
     private static function is_serialized(mixed $data): bool
@@ -291,34 +339,43 @@ final class magicreplace
         return unserialize($data, ['allowed_classes' => ['stdClass']]);
     }
 
-    private static function mysql_escape_mimic(mixed $inp, bool $reverse = false): mixed {
-        $_1 = ['\\', "\0", "\n", "\r", "'", '"', "\x1a"];
-        $_2 = ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'];
-        if(!empty($inp) && is_string($inp)) {
-            return $reverse === false ? str_replace($_1, $_2, $inp) : str_replace($_2, $_1, $inp);
-        }
-        return $inp;
+    private static function fail(string $message = 'error'): never
+    {
+        throw new \RuntimeException($message);
     }
+
 }
 
 // cli usage
 if (php_sapi_name() == 'cli' && isset($argv) && !empty($argv) && isset($argv[1]))
 {
-    if (!isset($argv) || empty($argv) || !isset($argv[1]) || !isset($argv[2]) || !isset($argv[3]) || !isset($argv[4])) { die('missing options'); }
-    $root = getcwd() . '/';
-    if (!file_exists($root . $argv[1])) { $root = ''; }
-    if (!file_exists($root . $argv[1])) { die('missing input'); }
-    $input = $root . $argv[1];
-    if (!file_exists($root . $argv[2])) { touch($root . $argv[2]); }
-    $output = $root . $argv[2];
+    if (count($argv) < 5 || (count($argv) - 3) % 2 !== 0) {
+        fwrite(STDERR, 'missing options' . PHP_EOL);
+        exit(1);
+    }
+    $input = $argv[1];
+    if (!file_exists($input)) { $input = getcwd() . '/' . $input; }
+    if (!file_exists($input)) {
+        fwrite(STDERR, 'missing input' . PHP_EOL);
+        exit(1);
+    }
+    $output = $argv[2];
+    if (!str_starts_with($output, '/') && preg_match('/^[A-Za-z]:[\\\\\/]/', $output) !== 1) {
+        $output = getcwd() . '/' . $output;
+    }
     $search_replace = [];
     foreach ($argv as $argv__key => $argv__value)
     {
         if ($argv__key <= 2) { continue; }
-        if ($argv__key % 2 == 1 && !isset($argv[ $argv__key + 1 ])) { continue; }
         if ($argv__key % 2 == 0) { continue; }
-        $search_replace[ $argv[ $argv__key ] ] = $argv[ $argv__key + 1 ];
+        $search_replace[$argv__value] = $argv[$argv__key + 1];
     }
-    magicreplace::run($input, $output, $search_replace, true);
-    die('done...');
+    try {
+        magicreplace::run($input, $output, $search_replace, true);
+    }
+    catch(\RuntimeException $exception) {
+        fwrite(STDERR, $exception->getMessage() . PHP_EOL);
+        exit(1);
+    }
+    echo 'done...';
 }

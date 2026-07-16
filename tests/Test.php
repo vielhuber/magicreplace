@@ -111,6 +111,91 @@ final class Test extends \PHPUnit\Framework\TestCase
         }
     }
 
+    public function testStaleSplitFilesAreRemoved(): void
+    {
+        $input = tempnam(sys_get_temp_dir(), 'magicreplace-input-');
+        $output = tempnam(sys_get_temp_dir(), 'magicreplace-output-');
+        $this->assertIsString($input);
+        $this->assertIsString($output);
+        $stale_split_file = $input . '-SPLITTEDzzzz';
+        file_put_contents($input, "INSERT INTO test VALUES ('old.example');\n");
+        file_put_contents($stale_split_file, "stale data\n");
+
+        magicreplace::run($input, $output, ['old.example' => 'new.example']);
+
+        $this->assertSame("INSERT INTO test VALUES ('new.example');\n", file_get_contents($output));
+        $this->assertFileDoesNotExist($stale_split_file);
+        unlink($input);
+        unlink($output);
+    }
+
+    public function testCliSupportsAbsoluteOutputPaths(): void
+    {
+        $input = tempnam(sys_get_temp_dir(), 'magicreplace-cli-input-');
+        $output = tempnam(sys_get_temp_dir(), 'magicreplace-cli-output-');
+        $this->assertIsString($input);
+        $this->assertIsString($output);
+        unlink($output);
+        file_put_contents($input, "INSERT INTO test VALUES ('old.example');\n");
+        $command_output = [];
+        $command_exit_code = 0;
+
+        exec(
+            escapeshellarg(PHP_BINARY) .
+                ' ' .
+                escapeshellarg(__DIR__ . '/../src/magicreplace.php') .
+                ' ' .
+                escapeshellarg($input) .
+                ' ' .
+                escapeshellarg($output) .
+                ' ' .
+                escapeshellarg('old.example') .
+                ' ' .
+                escapeshellarg('new.example') .
+                ' 2>&1',
+            $command_output,
+            $command_exit_code
+        );
+
+        $this->assertSame(0, $command_exit_code);
+        $this->assertSame("INSERT INTO test VALUES ('new.example');\n", file_get_contents($output));
+        unlink($input);
+        unlink($output);
+    }
+
+    public function testCliReturnsAnErrorCode(): void
+    {
+        $input = tempnam(sys_get_temp_dir(), 'magicreplace-cli-missing-');
+        $output = tempnam(sys_get_temp_dir(), 'magicreplace-cli-output-');
+        $this->assertIsString($input);
+        $this->assertIsString($output);
+        unlink($input);
+        unlink($output);
+        $command_output = [];
+        $command_exit_code = 0;
+
+        exec(
+            escapeshellarg(PHP_BINARY) .
+                ' ' .
+                escapeshellarg(__DIR__ . '/../src/magicreplace.php') .
+                ' ' .
+                escapeshellarg($input) .
+                ' ' .
+                escapeshellarg($output) .
+                ' ' .
+                escapeshellarg('old.example') .
+                ' ' .
+                escapeshellarg('new.example') .
+                ' 2>&1',
+            $command_output,
+            $command_exit_code
+        );
+
+        $this->assertSame(1, $command_exit_code);
+        $this->assertSame(['missing input'], $command_output);
+        $this->assertFileDoesNotExist($output);
+    }
+
     private function dump(string $filename): void
     {
         exec(

@@ -1,0 +1,5 @@
+{
+    "replace": {
+        "old.example": "new-domain.example"
+    }
+}
