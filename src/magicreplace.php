@@ -140,16 +140,24 @@ final class magicreplace
                 $data_length = strlen($data);
 
                 $pointer = $positions__value[1]-1+$position_offset;
-                // slow version
-                //while($pointer >= 1 && !($data[$pointer] == '\'' && $data[$pointer-1] != '\\' && $data[$pointer-1] != '\'' && $data[$pointer+1] != '\'')) { $pointer--; }
-                // fast version
-                $data_inverted = strrev($data);
-                $pointer_inverted = $data_length - $pointer;
-                if( preg_match('/([^\\\']|^)\'([^\\\\\']|$)/', $data_inverted, $matches, PREG_OFFSET_CAPTURE, $pointer_inverted) ) {
-                    $pointer = $data_length - $matches[0][1] - 2;
-                }
-                else {
-                    $pointer = 0;
+                while($pointer >= 0) {
+                    $quote_position = strrpos($data, '\'', $pointer - $data_length);
+                    if($quote_position === false) {
+                        $pointer = 0;
+                        break;
+                    }
+                    $character_before = $quote_position > 0 ? $data[$quote_position - 1] : '';
+                    $character_after = $quote_position + 1 < $data_length ? $data[$quote_position + 1] : '';
+                    if(
+                        $character_before !== '\\' &&
+                        $character_before !== '\'' &&
+                        $character_after !== '\\' &&
+                        $character_after !== '\''
+                    ) {
+                        $pointer = $quote_position;
+                        break;
+                    }
+                    $pointer = $quote_position - 1;
                 }
                 $pos_begin = $pointer+1;
 
