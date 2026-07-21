@@ -129,6 +129,23 @@ final class Test extends \PHPUnit\Framework\TestCase
         unlink($output);
     }
 
+    public function testSerializedPrefixWithTrailingDataIsPreserved(): void
+    {
+        $input = tempnam(sys_get_temp_dir(), 'magicreplace-input-');
+        $output = tempnam(sys_get_temp_dir(), 'magicreplace-output-');
+        $this->assertIsString($input);
+        $this->assertIsString($output);
+        $decodedInput = 's:3:"foo";' . str_repeat('payload-', 1379) . 'old.example';
+        $decodedOutput = str_replace('old.example', 'new-domain.example', $decodedInput);
+        file_put_contents($input, "'" . base64_encode($decodedInput) . "'\n");
+
+        magicreplace::run($input, $output, ['old.example' => 'new-domain.example']);
+
+        $this->assertSame("'" . base64_encode($decodedOutput) . "'\n", file_get_contents($output));
+        unlink($input);
+        unlink($output);
+    }
+
     public function testCliSupportsAbsoluteOutputPaths(): void
     {
         $input = tempnam(sys_get_temp_dir(), 'magicreplace-cli-input-');

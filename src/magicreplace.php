@@ -313,7 +313,9 @@ final class magicreplace
         if (!is_string($data) || $data == '') {
             return false;
         }
-        set_error_handler(function (int $errno, string $errstr): bool {
+        $unserializeWarning = false;
+        set_error_handler(function (int $errno, string $errstr) use (&$unserializeWarning): bool {
+            $unserializeWarning = true;
             return true;
         });
         try {
@@ -322,7 +324,7 @@ final class magicreplace
         finally {
             restore_error_handler();
         }
-        if ($data !== 'b:0;' && $unserialized === false) {
+        if ($unserializeWarning || ($data !== 'b:0;' && $unserialized === false)) {
             return false;
         }
         return true;
